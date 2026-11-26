@@ -1,0 +1,15 @@
+Options -Indexes
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+
+# Public uploads may contain images and documents, but must never execute scripts.
+<FilesMatch "(?i)\.(php[0-9]?|phtml|phar|cgi|pl|py|sh)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule mod_access_compat.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
