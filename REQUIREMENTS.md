@@ -28,6 +28,7 @@ SAKIB ENTERPRISE is a travel agency and tourism business located in Cox's Bazar 
 - Sign in through a protected admin area; no public admin registration.
 - Review and manage bookings, customers, contact messages, services, packages, destinations, ship routes, testimonials, and site settings according to access permissions.
 - Update booking status and internal notes; review status history.
+- Customers can use a booking reference and the phone number submitted with that inquiry to view the latest status of their own inquiries.
 - Configure business contact details and public website content without editing source files.
 
 ## 4. Functional Requirements

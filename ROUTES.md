@@ -22,6 +22,10 @@ Routes use raw PHP and PDO and work on Apache shared hosting. Clean paths use th
 | GET | `/about-us` | Published About Us content with safe fallback |
 | GET | `/contact-us` | Contact details and general inquiry form |
 | POST | `/contact-us` | Validate and store a contact message |
+| GET | `/customer/login` | Customer status-access form using booking reference and submitted phone |
+| POST | `/customer/login` | Verify inquiry ownership and start a rate-limited, time-limited session |
+| GET | `/customer/dashboard` | View the signed-in customer's inquiry references and latest statuses |
+| POST | `/customer/logout` | End the customer portal session |
 | GET | `/booking/{service}` | Service-specific travel inquiry form |
 | POST | `/booking/submit` | Validate and store a travel inquiry and customer record transactionally |
 | GET | `/booking/success/{reference}` | Private, non-cacheable inquiry confirmation; not a ticket confirmation |

@@ -65,7 +65,15 @@ Work strictly one phase at a time. A phase is complete only when its deliverable
 - Fix high/critical defects, optimize assets/queries, and create a test report.
 - **Status:** Complete. See `TEST_REPORT.md` for Phase 9 checks, fixes, and deployment verification limits.
 
-## Phase 10 — Shared Hosting Deployment & Handover
+## Phase 10 — Customer Status Portal
+
+- Provide a public customer status-access form using a booking reference and the registered inquiry phone number.
+- Verify ownership with generic errors, CSRF protection, hashed-attempt storage, rate limits, and time-limited session access.
+- Show only the signed-in customer's inquiry references, destinations, dates, and latest status; add sign-out and public navigation links.
+- Add a safe database migration and update installation, requirements, database, and route documentation.
+- **Status:** Implementation complete; end-to-end verification is pending before this phase is declared complete.
+
+## Phase 11 — Shared Hosting Deployment & Handover
 
 - Prepare Apache/cPanel upload instructions, production database import/configuration, document-root and `.htaccess` guidance, secure initial admin setup, backup/restore and update guidance.
 - Verify deployment requirements against the actual hosting account; do not claim a live deployment without performing it.

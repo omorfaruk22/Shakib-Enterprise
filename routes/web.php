@@ -6,6 +6,7 @@ use App\Helpers\Logger;
 use App\Services\BookingService;
 use App\Services\BookingSubmissionException;
 use App\Services\ContactMessageService;
+use App\Services\CustomerPortalService;
 use App\Services\HomepageService;
 use App\Services\PublicPagesService;
 
@@ -373,6 +374,87 @@ $router->post('/contact-us', static function () use ($renderContact): void {
         ];
         redirect('/contact-us', 303);
     }
+});
+
+$customerLoginTitle = 'Customer booking status';
+$renderCustomerLogin = static function (?string $errorMessage = null) use ($renderPage, $customerLoginTitle): void {
+    start_secure_session();
+    $renderPage('customer-login', $customerLoginTitle, 'Sign in securely to review the latest status of your travel inquiries.', '/customer/login', [
+        'csrfToken' => csrf_token(),
+        'errorMessage' => $errorMessage,
+    ]);
+};
+
+$router->get('/customer/login', static function () use ($renderCustomerLogin): void {
+    $customerPortal = new CustomerPortalService();
+    if ($customerPortal->currentCustomerId() !== null) {
+        redirect('/customer/dashboard', 303);
+    }
+    $renderCustomerLogin();
+});
+
+$router->post('/customer/login', static function () use ($renderCustomerLogin): void {
+    start_secure_session();
+    if (!is_valid_csrf_token($_POST['_csrf'] ?? null)) {
+        http_response_code(403);
+        $renderCustomerLogin('The security check expired. Reload this page and try again.');
+        return;
+    }
+
+    $customerPortal = new CustomerPortalService();
+    $result = $customerPortal->authenticate(
+        $_POST['booking_reference'] ?? null,
+        $_POST['phone'] ?? null,
+        (string) ($_SERVER['REMOTE_ADDR'] ?? '')
+    );
+    if ($result['ok']) {
+        redirect('/customer/dashboard', 303);
+    }
+
+    if ($result['rate_limited']) {
+        http_response_code(429);
+        $renderCustomerLogin('Too many attempts. Please wait 15 minutes and try again.');
+        return;
+    }
+
+    http_response_code(401);
+    $renderCustomerLogin('The booking reference and phone number did not match. Check them and try again.');
+});
+
+$router->get('/customer/dashboard', static function () use ($renderPage): void {
+    $customerPortal = new CustomerPortalService();
+    $customerId = $customerPortal->currentCustomerId();
+    if ($customerId === null) {
+        redirect('/customer/login', 303);
+    }
+
+    $data = $customerPortal->dashboard($customerId);
+    if ($data['customer'] === []) {
+        $customerPortal->logout();
+        redirect('/customer/login', 303);
+    }
+
+    $renderPage('customer-dashboard', 'My travel inquiries', 'Review your inquiry references and their latest status.', '/customer/dashboard', [
+        'csrfToken' => csrf_token(),
+        'customer' => $data['customer'],
+        'bookings' => $data['bookings'],
+        'bookingTotal' => $data['total'],
+    ]);
+});
+
+$router->post('/customer/logout', static function (): void {
+    $customerPortal = new CustomerPortalService();
+    if ($customerPortal->currentCustomerId() === null) {
+        redirect('/customer/login', 303);
+    }
+    if (!is_valid_csrf_token($_POST['_csrf'] ?? null)) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Security check failed';
+        return;
+    }
+    $customerPortal->logout();
+    redirect('/customer/login', 303);
 });
 
 $router->get('/health', static function (): void {

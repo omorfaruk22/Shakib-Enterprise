@@ -45,6 +45,6 @@ The Phase 7 and Phase 8 progress records document database-backed create/read/up
 
 ## Limits
 
-- Apache `.htaccess` behavior was reviewed but not executed by the PHP built-in server. Verify rewrite, private-file denial, and `mod_headers` behavior on the actual cPanel host during Phase 10.
+- Apache `.htaccess` behavior was reviewed but not executed by the PHP built-in server. Verify rewrite, private-file denial, and `mod_headers` behavior on the actual cPanel host during Phase 11.
 - Responsive visual review covered 1280px desktop and one 375px emulated mobile width; it did not cover a real-device matrix. Database performance was not benchmarked with realistic production-sized records.
 - Local launch setup still requires the real administrator account and business-approved contact details, packages, destinations, and content described in the Phase 8 progress record.

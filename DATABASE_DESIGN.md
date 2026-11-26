@@ -25,6 +25,12 @@
 
 - `id` PK; `full_name`; `phone`; `phone_normalized` indexed; `email` nullable; `created_at`; `updated_at`.
 - Match repeat inquiries by normalized phone and update the existing customer record in the same transaction as the booking.
+- Customer inquiry access uses a booking reference plus the phone number on that customer record. No customer password or payment data is stored.
+
+### `customer_portal_login_attempts`
+
+- `id` PK; SHA-256 hashes of the booking reference and IP address; `attempted_at`; `was_successful`.
+- Use the hashes for short-window rate limiting without storing raw booking references or IP addresses. Delete attempts older than one day during portal sign-in.
 
 ### `services`
 
@@ -92,6 +98,7 @@
 ## 3. Relationships
 
 - One customer has many bookings.
+- A customer can view inquiry status after proving access with one booking reference and the phone number stored on their customer record.
 - One destination has many tour/holiday packages.
 - One booking has many notes and status-history entries.
 - One admin creates many booking notes, status changes, uploaded media, and activity records.

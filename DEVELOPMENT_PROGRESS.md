@@ -100,7 +100,7 @@
 
 ## Phase 09 — Testing & Performance Optimization
 
-- **Status:** Complete for local verification; actual cPanel/Apache hosting verification remains in Phase 10.
+- **Status:** Complete for local verification; actual cPanel/Apache hosting verification remains in Phase 11.
 - **Defects fixed:** Initialized the ship-route ID before validation to remove an undefined-variable warning. Fixed the public mobile navigation so opening the menu stacks links vertically. Added baseline response security headers (`nosniff`, frame denial, referrer policy, and permissions policy) for dynamic PHP responses and Apache responses.
 - **Files modified:** `app/Services/BookingService.php`, `resources/views/layouts/public.php`, `public/index.php`, `public/.htaccess`, `DEVELOPMENT_PLAN.md`, and this progress record.
 - **Files created:** `TEST_REPORT.md`.
@@ -108,7 +108,19 @@
 - **Responsive review:** Desktop homepage was reviewed at 1280px. The public site and air-ticket form were reviewed at a 375px mobile viewport. The mobile menu displayed a horizontal row before the fix and vertical links after it; the booking form remained within the mobile viewport.
 - **Database cleanup:** The local database had no admin, customer, booking, contact, catalog, content, media, or settings test records after checks.
 - **Performance review:** Committed minified Tailwind stylesheet is 39,863 bytes, site JavaScript is 1,318 bytes, and the optimized Cox's Bazar WebP is 192,000 bytes. Query performance was not benchmarked against realistic production data because the local database was empty. Existing Phase 7/8 records document CRUD, pagination, filtering, CSV, authentication, and upload integration checks.
-- **Known limits / inputs needed:** The PHP built-in server does not apply Apache `.htaccess`; Apache directives were reviewed but must be verified on the actual cPanel host in Phase 10. Browser review used desktop and one emulated mobile width, not a matrix of real devices. Create the real local admin and add approved business details/content before launch, as recorded in Phase 8.
+- **Known limits / inputs needed:** The PHP built-in server does not apply Apache `.htaccess`; Apache directives were reviewed but must be verified on the actual cPanel host in Phase 11. Browser review used desktop and one emulated mobile width, not a matrix of real devices. Create the real local admin and add approved business details/content before launch, as recorded in Phase 8.
 - **Remaining tasks:** None for Phase 9. Continue to Phase 10 when requested.
+
+## Phase 10 — Customer Status Portal
+
+- **Status:** Implementation complete; end-to-end verification is pending.
+- **Features added:** Public “Track inquiry” links; customer sign-in using a booking reference and the phone number used on that inquiry; a customer dashboard listing up to 50 of their latest inquiries and current statuses; POST/CSRF-protected sign-out; 30-minute idle and 12-hour absolute session expiry; login rate limiting by hashed reference/IP; generic mismatch errors.
+- **Privacy behavior:** The portal verifies one booking reference against its linked customer record, then shows only that customer's inquiries. It does not show admin notes or status-history notes. Raw references and IP addresses are not stored in the login-attempt table.
+- **Files created:** `app/Services/CustomerPortalService.php`, `resources/views/pages/customer-login.php`, `resources/views/pages/customer-dashboard.php`, `database/migrations/2026_11_27_add_customer_portal_login_attempts.sql`.
+- **Files modified:** `routes/web.php`, `resources/views/layouts/public.php`, `resources/views/pages/booking-success.php`, `database/sakib_enterprise.sql`, `DATABASE_DESIGN.md`, `REQUIREMENTS.md`, `ROUTES.md`, `README.md`, `DEVELOPMENT_PLAN.md`, and this progress record. `public/assets/css/site.css` was rebuilt.
+- **Database changes:** Applied the idempotent customer portal rate-limit migration to the configured local database.
+- **Checks performed:** PHP syntax lint passed for all six changed PHP files; Tailwind CSS v4.3.5 rebuilt the stylesheet; `git diff --check` passed.
+- **Known limits / inputs needed:** No customer password or SMS/email OTP provider is configured, so sign-in requires the booking reference plus the inquiry phone. A customer must first submit an inquiry to obtain a reference. No end-to-end portal flow was run in this pass; test with a sample inquiry before production. Apply the new migration on any existing production database before deployment.
+- **Remaining tasks:** Run the booking → customer sign-in → status display → sign-out flow after creating a sample inquiry; continue to Phase 11 deployment after review.
 
 
