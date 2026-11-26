@@ -7,7 +7,7 @@ Raw PHP travel-agency website for ordinary PHP/MySQL shared hosting.
 - PHP 8.2 or newer with PDO and `pdo_mysql` enabled.
 - PHP `fileinfo` enabled for image upload type verification.
 - MySQL 8+ / InnoDB / `utf8mb4`.
-- Apache with `.htaccess`/`mod_rewrite` enabled for clean routes. If rewrite is unavailable, PHP pages can also use explicit query-string routing.
+- Apache with `.htaccess` and `mod_rewrite` enabled for clean routes. This release does not provide a query-string router fallback; ask the host to enable the required rewrite rules.
 - Tailwind CSS is compiled locally to `public/assets/css/site.css`; hosting needs no Node.js or build process.
 - Public layout styling is written with Tailwind utility classes directly in the PHP templates' HTML `class` attributes. See `TAILWIND.md` to rebuild the static stylesheet.
 
@@ -58,12 +58,9 @@ php scripts/check-database.php
 - Setup closes automatically when an administrator exists. There is no public registration form. Sign in at `/admin/login`.
 - Remove `ADMIN_SETUP_TOKEN` from `.env` after creating the account. Do not commit `.env` or share the administrator password.
 
-## cPanel deployment outline
+## cPanel deployment
 
-- Point the domain's document root at the project's `public/` directory when the host allows it.
-- Keep `.env`, `app/`, `config/`, `database/`, `routes/`, `scripts/`, and `storage/` outside the public document root.
-- Import the SQL file using phpMyAdmin, set the real credentials in a protected `.env` file, upload the generated static CSS and assets, and verify PHP/MySQL compatibility.
-- Keep `.env` outside the public document root and use HTTPS for the first-admin setup. Generate a private random `ADMIN_SETUP_TOKEN` of at least 32 characters, create the first administrator at `/admin/setup`, then remove the setup token from the production `.env` file.
+Follow [DEPLOYMENT.md](DEPLOYMENT.md) for the private/public directory layout, database import and migrations, production `.env` setup, secure first-admin creation, go-live checks, backups, restores, and updates. Do not deploy until the host can serve the project's `public/` directory as the domain document root.
 
 The public pages, booking/contact inquiries, and Phase 7 database integration are implemented. Phase 8 adds first-admin setup, login, the responsive admin dashboard, booking/customer/contact management, catalog/content/settings CRUD, safe image uploads, and activity history. Public and admin views use Tailwind utility classes in HTML; the committed `site.css` is the compiled stylesheet required by shared hosting. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.
 

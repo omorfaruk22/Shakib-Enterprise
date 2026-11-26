@@ -78,6 +78,7 @@ Work strictly one phase at a time. A phase is complete only when its deliverable
 - Prepare Apache/cPanel upload instructions, production database import/configuration, document-root and `.htaccess` guidance, secure initial admin setup, backup/restore and update guidance.
 - Verify deployment requirements against the actual hosting account; do not claim a live deployment without performing it.
 - Deliver source, installation SQL, and user/admin documentation.
+- **Status:** Deployment guide prepared; actual host verification and live deployment are pending hosting-account details.
 
 ## Acceptance Gate
 

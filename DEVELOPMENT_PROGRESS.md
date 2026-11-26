@@ -123,4 +123,15 @@
 - **Known limits / inputs needed:** No customer password or SMS/email OTP provider is configured, so sign-in requires the booking reference plus the inquiry phone. A customer must first submit an inquiry to obtain a reference. No end-to-end portal flow was run in this pass; test with a sample inquiry before production. Apply the new migration on any existing production database before deployment.
 - **Remaining tasks:** Run the booking → customer sign-in → status display → sign-out flow after creating a sample inquiry; continue to Phase 11 deployment after review.
 
+## Phase 11 — Shared Hosting Deployment & Handover
+
+- **Status:** Handover documentation prepared; actual cPanel verification and live deployment are pending host/account details.
+- **Files created:** `DEPLOYMENT.md`.
+- **Files modified:** `README.md`, `scripts/check-environment.php`, `DEVELOPMENT_PLAN.md`, and this progress record.
+- **Deployment audit:** Documented required runtime PHP 8.2+, `PDO`, `pdo_mysql`, `session`, `fileinfo`, MySQL 8+, a private project root with `public/` as document root, `.htaccess` module/override requirements, production `.env`, HTTPS, initial admin setup, permissions, database migrations, backups, restores, updates, and go-live checks. Updated the environment checker so it matches the documented `fileinfo` upload requirement.
+- **Checks performed:** Static review of `.htaccess`, storage/upload layout, `.env.example`, schema/migration instructions, and PHP environment/database scripts. The environment checker change is limited to including `fileinfo` in its required-extension list.
+- **External documentation consulted:** cPanel's domain document-root and MultiPHP Manager guides, Apache's `.htaccess`/`AllowOverride` documentation, and the PHP PDO_MYSQL manual are linked in `DEPLOYMENT.md`.
+- **Known limits / inputs needed:** No hosting provider, domain, cPanel account, PHP/MySQL versions, extensions, document root, or Apache override settings were provided. No live upload, database import, or domain verification has been performed. Phase 10 customer portal end-to-end flow also still needs a real inquiry reference before deployment.
+- **Remaining tasks:** Obtain host-specific non-secret details, verify the domain can serve the project's `public/` directory, and complete the go-live checklist before claiming deployment.
+
 

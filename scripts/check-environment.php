@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/bootstrap.php';
 
-$required = ['PDO', 'pdo_mysql', 'session'];
+$required = ['PDO', 'pdo_mysql', 'session', 'fileinfo'];
 $loaded = get_loaded_extensions();
 $missing = array_values(array_diff($required, $loaded));
 $versionSupported = version_compare(PHP_VERSION, '8.2.0', '>=');
