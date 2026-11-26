@@ -2,10 +2,19 @@
 declare(strict_types=1);
 
 use App\Database\Connection;
+use App\Services\HomepageService;
 
 $router->get('/', static function (): void {
+    $homepage = (new HomepageService())->load();
+    $siteSettings = $homepage['settings'];
+    $siteName = trim((string) ($siteSettings['site_name'] ?? 'SAKIB ENTERPRISE')) ?: 'SAKIB ENTERPRISE';
+    $pageTitle = trim((string) ($siteSettings['homepage_meta_title'] ?? '')) ?: $siteName . " | Travel Services in Cox's Bazar";
+    $pageDescription = trim((string) ($siteSettings['homepage_meta_description'] ?? ''))
+        ?: 'Explore travel services, destinations and package inquiries with ' . $siteName . '.';
+    $pageCanonical = app_url('/');
+    $contentView = BASE_PATH . '/resources/views/pages/home.php';
     header('Content-Type: text/html; charset=utf-8');
-    echo '<main><h1>SAKIB ENTERPRISE</h1><p>Project foundation is ready.</p></main>';
+    require BASE_PATH . '/resources/views/layouts/public.php';
 });
 
 $router->get('/health', static function (): void {

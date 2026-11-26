@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@source "../../../resources/views/**/*.php";
+
+@theme {
+  --color-brand-navy: #102B70;
+  --color-brand-deep: #091b48;
+  --color-brand-red: #D52D35;
+  --color-brand-sky: #EAF2FC;
+  --font-sans: "Nirmala UI", "Segoe UI", Arial, sans-serif;
+}
