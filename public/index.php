@@ -20,6 +20,11 @@ if (PHP_SAPI === 'cli-server') {
     }
 }
 
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: camera=(), geolocation=(), microphone=()');
+
 require dirname(__DIR__) . '/bootstrap.php';
 
 use App\Helpers\Router;

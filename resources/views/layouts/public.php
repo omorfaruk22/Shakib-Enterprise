@@ -57,7 +57,7 @@ $pageBody = (string) ob_get_clean();
         <span class="leading-tight"><?= e($siteName) ?><small class="mt-1 block text-[10px] font-bold tracking-[.13em] text-slate-500"><?= e($siteTagline) ?></small></span>
       </a>
       <button class="grid size-11 place-items-center rounded-xl border border-slate-200 bg-white text-xl text-brand-navy md:hidden" data-menu-toggle aria-expanded="false" aria-controls="public-navigation" aria-label="Toggle navigation">☰</button>
-      <nav id="public-navigation" class="absolute left-0 right-0 top-full hidden flex-col border-b border-slate-200 bg-white px-5 pb-5 pt-3 shadow-xl md:static md:flex md:flex-row md:items-center md:gap-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none" data-menu aria-label="Main navigation">
+      <nav id="public-navigation" class="absolute left-0 right-0 top-full hidden flex flex-col border-b border-slate-200 bg-white px-5 pb-5 pt-3 shadow-xl md:static md:flex md:flex-row md:items-center md:gap-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none" data-menu aria-label="Main navigation">
         <a class="border-b border-slate-100 py-3 text-sm font-semibold hover:text-brand-red md:border-0 md:py-0" href="<?= e(app_url('/services')) ?>">Services</a>
         <a class="border-b border-slate-100 py-3 text-sm font-semibold hover:text-brand-red md:border-0 md:py-0" href="<?= e(app_url('/destinations')) ?>">Destinations</a>
         <a class="border-b border-slate-100 py-3 text-sm font-semibold hover:text-brand-red md:border-0 md:py-0" href="<?= e(app_url('/packages')) ?>">Packages</a>

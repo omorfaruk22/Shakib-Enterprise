@@ -46,6 +46,7 @@ final class BookingService
         $message = $this->text($input, 'customer_message');
         $packageSlug = $this->text($input, 'package_slug');
         $shipRouteRaw = $this->text($input, 'ship_route_id');
+        $shipRouteId = null;
 
         foreach ([
             'full_name' => [$name, 160, 'Your name must be 160 characters or fewer.'],
@@ -115,7 +116,6 @@ final class BookingService
         if ($packageSlug !== '' && !in_array($definition['slug'], ['tour-travel', 'holiday-package'], true)) {
             $errors['package_slug'] = 'Only tour and holiday inquiries can include a package.';
         }
-        $shipRouteId = null;
         if ($shipRouteRaw !== '') {
             $shipRouteId = filter_var($shipRouteRaw, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
             if ($shipRouteId === false || $definition['slug'] !== 'ship-ticket') {

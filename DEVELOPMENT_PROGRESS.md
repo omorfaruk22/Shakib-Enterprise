@@ -98,4 +98,17 @@
 - **Known issues / inputs needed:** Create the real local admin at `/admin/setup` using the one-time value in the ignored `.env`, then remove `ADMIN_SETUP_TOKEN` after setup. Production setup must use HTTPS and a separately generated secret. Add business-approved phone, WhatsApp, email, destinations, packages, images, testimonials and page content before launch.
 - **Remaining tasks:** None for Phase 8. Continue to Phase 9 only when requested.
 
+## Phase 09 — Testing & Performance Optimization
+
+- **Status:** Complete for local verification; actual cPanel/Apache hosting verification remains in Phase 10.
+- **Defects fixed:** Initialized the ship-route ID before validation to remove an undefined-variable warning. Fixed the public mobile navigation so opening the menu stacks links vertically. Added baseline response security headers (`nosniff`, frame denial, referrer policy, and permissions policy) for dynamic PHP responses and Apache responses.
+- **Files modified:** `app/Services/BookingService.php`, `resources/views/layouts/public.php`, `public/index.php`, `public/.htaccess`, `DEVELOPMENT_PLAN.md`, and this progress record.
+- **Files created:** `TEST_REPORT.md`.
+- **Checks performed:** PHP syntax lint passed for all 67 PHP files; PHP environment and MySQL connection scripts passed; all 16 public pages/forms returned HTTP 200; `/health/database` returned `database ok`; an unknown route returned 404; all five booking validators accepted valid service-specific input; missing CSRF returned 403; invalid booking input returned 422; submitted script markup was HTML-escaped; seven unauthenticated admin screens redirected to `/admin/login`; `.env` was not publicly accessible; dynamic security headers were present; Tailwind CSS rebuilt successfully; `git diff --check` passed.
+- **Responsive review:** Desktop homepage was reviewed at 1280px. The public site and air-ticket form were reviewed at a 375px mobile viewport. The mobile menu displayed a horizontal row before the fix and vertical links after it; the booking form remained within the mobile viewport.
+- **Database cleanup:** The local database had no admin, customer, booking, contact, catalog, content, media, or settings test records after checks.
+- **Performance review:** Committed minified Tailwind stylesheet is 39,863 bytes, site JavaScript is 1,318 bytes, and the optimized Cox's Bazar WebP is 192,000 bytes. Query performance was not benchmarked against realistic production data because the local database was empty. Existing Phase 7/8 records document CRUD, pagination, filtering, CSV, authentication, and upload integration checks.
+- **Known limits / inputs needed:** The PHP built-in server does not apply Apache `.htaccess`; Apache directives were reviewed but must be verified on the actual cPanel host in Phase 10. Browser review used desktop and one emulated mobile width, not a matrix of real devices. Create the real local admin and add approved business details/content before launch, as recorded in Phase 8.
+- **Remaining tasks:** None for Phase 9. Continue to Phase 10 when requested.
+
 
