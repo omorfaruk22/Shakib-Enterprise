@@ -63,6 +63,9 @@ final class PublicPagesService
             'whatsapp' => '',
             'email' => '',
             'office_hours' => '',
+            'facebook_url' => '',
+            'instagram_url' => '',
+            'map_embed_url' => '',
         ];
         $keys = array_keys($defaults);
         $placeholders = implode(',', array_fill(0, count($keys), '?'));
@@ -227,6 +230,18 @@ final class PublicPagesService
             'meta_title' => '',
             'meta_description' => '',
         ];
+    }
+
+    public function page(string $slug): ?array
+    {
+        if (preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/D', $slug) !== 1) {
+            return null;
+        }
+        return $this->fetchOne(
+            'SELECT slug, title, body, meta_title, meta_description
+             FROM website_pages WHERE slug = ? AND is_published = 1 LIMIT 1',
+            [$slug]
+        );
     }
 
     public function databaseAvailable(): bool

@@ -15,7 +15,7 @@ final class CatalogRepository
             'columns' => ['slug', 'name', 'description', 'image_path', 'is_active', 'sort_order'],
             'required' => ['slug', 'name'],
             'defaults' => ['is_active' => 1, 'sort_order' => 0],
-            'checks' => ['is_active', 'sort_order'],
+            'checks' => ['is_active'],
             'search' => ['slug', 'name', 'description'],
             'order' => 'sort_order ASC, name ASC',
             'lengths' => ['slug' => 180, 'name' => 160, 'description' => 20000, 'image_path' => 500],
@@ -45,7 +45,7 @@ final class CatalogRepository
             'columns' => ['origin', 'destination', 'description', 'is_active', 'sort_order'],
             'required' => ['origin', 'destination'],
             'defaults' => ['is_active' => 1, 'sort_order' => 0],
-            'checks' => ['is_active', 'sort_order'],
+            'checks' => ['is_active'],
             'search' => ['origin', 'destination', 'description'],
             'order' => 'sort_order ASC, origin ASC, destination ASC',
             'lengths' => ['origin' => 160, 'destination' => 160, 'description' => 20000],
@@ -207,6 +207,9 @@ final class CatalogRepository
                 if (preg_match('/^[A-Z]{3}$/D', $text) !== 1) {
                     throw new InvalidArgumentException('Currency must use a three-letter code such as BDT.');
                 }
+            }
+            if ($column === 'image_path' && $text !== '' && preg_match('#^(?:assets|uploads)/[A-Za-z0-9/_-]+\.(?:jpe?g|png|webp|avif)$#iD', $text) !== 1) {
+                throw new InvalidArgumentException('Choose a local image path under assets/ or uploads/ using JPG, PNG, WebP or AVIF.');
             }
             $maximum = $definition['lengths'][$column] ?? null;
             if ($maximum !== null && $this->length($text) > $maximum) {

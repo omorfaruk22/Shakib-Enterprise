@@ -27,6 +27,11 @@ $old ??= [];
         <p class="mt-1"><?= e((string) ($siteSettings['office_address'] ?? "Cox's Bazar Sadar, Bangladesh")) ?></p>
         <?php if (trim((string) ($siteSettings['office_hours'] ?? '')) !== ''): ?><p class="mt-3 whitespace-pre-line"><?= e((string) $siteSettings['office_hours']) ?></p><?php endif; ?>
       </div>
+      <?php if ($mapEmbedUrl !== ''): ?>
+        <div class="mt-7 overflow-hidden rounded-2xl border border-white/15 bg-white/10">
+          <iframe class="h-64 w-full border-0" src="<?= e($mapEmbedUrl) ?>" title="Map showing the office location" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        </div>
+      <?php endif; ?>
     </div>
 
     <div class="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">

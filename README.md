@@ -5,6 +5,7 @@ Raw PHP travel-agency website for ordinary PHP/MySQL shared hosting.
 ## Requirements
 
 - PHP 8.2 or newer with PDO and `pdo_mysql` enabled.
+- PHP `fileinfo` enabled for image upload type verification.
 - MySQL 8+ / InnoDB / `utf8mb4`.
 - Apache with `.htaccess`/`mod_rewrite` enabled for clean routes. If rewrite is unavailable, PHP pages can also use explicit query-string routing.
 - Tailwind CSS is compiled locally to `public/assets/css/site.css`; hosting needs no Node.js or build process.
@@ -50,11 +51,18 @@ To check the configured MySQL connection from the command line:
 php scripts/check-database.php
 ```
 
+## First administrator account
+
+- With the local PHP server and MySQL running, open `http://127.0.0.1:8000/admin/setup`.
+- The ignored local `.env` file contains the one-time `ADMIN_SETUP_TOKEN`. Use it to create the real administrator account with a password of at least 12 characters.
+- Setup closes automatically when an administrator exists. There is no public registration form. Sign in at `/admin/login`.
+- Remove `ADMIN_SETUP_TOKEN` from `.env` after creating the account. Do not commit `.env` or share the administrator password.
+
 ## cPanel deployment outline
 
 - Point the domain's document root at the project's `public/` directory when the host allows it.
 - Keep `.env`, `app/`, `config/`, `database/`, `routes/`, `scripts/`, and `storage/` outside the public document root.
 - Import the SQL file using phpMyAdmin, set the real credentials in a protected `.env` file, upload the generated static CSS and assets, and verify PHP/MySQL compatibility.
-- Do not use a public default admin credential. The first-admin setup will be implemented in Phase 8.
+- Keep `.env` outside the public document root and use HTTPS for the first-admin setup. Generate a private random `ADMIN_SETUP_TOKEN` of at least 32 characters, create the first administrator at `/admin/setup`, then remove the setup token from the production `.env` file.
 
-The public homepage, content pages, booking inquiry system, and Phase 7 database integration are implemented. Visitors can submit air, ship, bus, tour, holiday, and general contact inquiries; a travel inquiry is not a ticket or a confirmed booking. Public styling uses Tailwind utility classes in the page markup; `site.css` is the compiled static file required by browsers and shared hosting. Admin-only CRUD, search, status history, and export services are in place, while login and dashboard routes remain scheduled for Phase 8. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.
+The public pages, booking/contact inquiries, and Phase 7 database integration are implemented. Phase 8 adds first-admin setup, login, the responsive admin dashboard, booking/customer/contact management, catalog/content/settings CRUD, safe image uploads, and activity history. Public and admin views use Tailwind utility classes in HTML; the committed `site.css` is the compiled stylesheet required by shared hosting. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.

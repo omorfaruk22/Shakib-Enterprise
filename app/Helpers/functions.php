@@ -12,6 +12,12 @@ function app_url(string $path = ''): string
     return rtrim((string) ($appConfig['url'] ?? ''), '/') . '/' . ltrim($path, '/');
 }
 
+function request_is_https(): bool
+{
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (string) ($_SERVER['SERVER_PORT'] ?? '') === '443';
+}
+
 function redirect(string $path, int $status = 302): never
 {
     header('Location: ' . app_url($path), true, $status);
@@ -45,6 +51,42 @@ function is_valid_csrf_token(mixed $submitted): bool
         && is_string($sessionToken)
         && strlen($sessionToken) === 64
         && hash_equals($sessionToken, $submitted);
+}
+
+function safe_social_url(mixed $value, string $domain): string
+{
+    if (!is_string($value) || $value === '') {
+        return '';
+    }
+    $parts = parse_url($value);
+    if (!is_array($parts) || strtolower((string) ($parts['scheme'] ?? '')) !== 'https') {
+        return '';
+    }
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    if (isset($parts['user']) || isset($parts['pass']) || !($host === $domain || str_ends_with($host, '.' . $domain))) {
+        return '';
+    }
+    return $value;
+}
+
+function safe_map_embed_url(mixed $value): string
+{
+    if (!is_string($value) || $value === '') {
+        return '';
+    }
+    $parts = parse_url($value);
+    if (!is_array($parts)) {
+        return '';
+    }
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    $path = (string) ($parts['path'] ?? '');
+    return strtolower((string) ($parts['scheme'] ?? '')) === 'https'
+        && in_array($host, ['www.google.com', 'maps.google.com'], true)
+        && str_starts_with($path, '/maps/embed')
+        && !isset($parts['user'])
+        && !isset($parts['pass'])
+        ? $value
+        : '';
 }
 
 function issue_booking_submission_token(): string

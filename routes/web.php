@@ -280,6 +280,18 @@ $router->get('/about-us', static function () use ($pageService, $renderPage): vo
     $renderPage('about', $title, $description, '/about-us', ['aboutPage' => $aboutPage]);
 });
 
+$router->get('/pages/{slug}', static function (array $parameters) use ($pageService, $renderPage, $renderNotFound): void {
+    $slug = (string) ($parameters['slug'] ?? '');
+    $page = $pageService->page($slug);
+    if ($page === null) {
+        $renderNotFound();
+        return;
+    }
+    $title = trim((string) ($page['meta_title'] ?? '')) ?: (string) $page['title'];
+    $description = trim((string) ($page['meta_description'] ?? '')) ?: 'Learn more about SAKIB ENTERPRISE.';
+    $renderPage('content-page', $title, $description, '/pages/' . rawurlencode($slug), ['page' => $page]);
+});
+
 $contactContext = static function () use ($pageService): array {
     $requestedService = '';
     $requestedSlug = $_GET['service'] ?? '';
@@ -376,3 +388,5 @@ if (($appConfig['environment'] ?? 'production') !== 'production') {
         echo 'database ok';
     });
 }
+
+require BASE_PATH . '/routes/admin.php';

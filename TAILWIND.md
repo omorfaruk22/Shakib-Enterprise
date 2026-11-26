@@ -1,6 +1,6 @@
 # Tailwind CSS Build
 
-Public page styling is written as Tailwind utility classes in the PHP templates' HTML `class` attributes. `public/assets/css/input.css` only imports Tailwind and defines the brand colors and font. The generated `public/assets/css/site.css` is the static, minified stylesheet the browser loads; it is committed and uploaded with the website. Production cPanel/shared hosting does not need Node.js, npm, a build process, or a long-running process.
+Public and admin page styling is written as Tailwind utility classes in the PHP templates' HTML `class` attributes. `public/assets/css/input.css` only imports Tailwind and defines the brand colors and font. The generated `public/assets/css/site.css` is the static, minified stylesheet the browser loads; it is committed and uploaded with the website. Production cPanel/shared hosting does not need Node.js, npm, a build process, or a long-running process.
 
 ## Source and output
 

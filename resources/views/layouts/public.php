@@ -14,6 +14,9 @@ $whatsappUrl = strlen($whatsappDigits) >= 8 && strlen($whatsappDigits) <= 15 && 
     ? 'https://wa.me/' . $whatsappDigits
     : '';
 $email = filter_var(trim((string) ($siteSettings['email'] ?? '')), FILTER_VALIDATE_EMAIL) ?: '';
+$facebookUrl = safe_social_url($siteSettings['facebook_url'] ?? '', 'facebook.com');
+$instagramUrl = safe_social_url($siteSettings['instagram_url'] ?? '', 'instagram.com');
+$mapEmbedUrl = safe_map_embed_url($siteSettings['map_embed_url'] ?? '');
 
 ob_start();
 require $contentView;
@@ -76,7 +79,7 @@ $pageBody = (string) ob_get_clean();
         </div>
         <div><h2 class="text-sm font-bold text-white">Services</h2><ul class="mt-3 space-y-2 text-sm text-blue-200"><li><a class="hover:text-white" href="<?= e(app_url('/air-tickets')) ?>">Air tickets</a></li><li><a class="hover:text-white" href="<?= e(app_url('/ship-tickets')) ?>">Ship tickets</a></li><li><a class="hover:text-white" href="<?= e(app_url('/bus-tickets')) ?>">Bus tickets</a></li><li><a class="hover:text-white" href="<?= e(app_url('/tour-travel')) ?>">Tours and holidays</a></li></ul></div>
         <div><h2 class="text-sm font-bold text-white">Explore</h2><ul class="mt-3 space-y-2 text-sm text-blue-200"><li><a class="hover:text-white" href="<?= e(app_url('/destinations')) ?>">Destinations</a></li><li><a class="hover:text-white" href="<?= e(app_url('/packages')) ?>">Packages</a></li><li><a class="hover:text-white" href="<?= e(app_url('/about-us')) ?>">About us</a></li></ul></div>
-        <div><h2 class="text-sm font-bold text-white">Contact</h2><p class="mt-3 text-sm text-blue-200"><?= e($officeAddress) ?></p><a class="mt-2 inline-block text-sm text-blue-200 hover:text-white" href="<?= e(app_url('/contact-us')) ?>">Contact details →</a></div>
+        <div><h2 class="text-sm font-bold text-white">Contact</h2><p class="mt-3 text-sm text-blue-200"><?= e($officeAddress) ?></p><a class="mt-2 inline-block text-sm text-blue-200 hover:text-white" href="<?= e(app_url('/contact-us')) ?>">Contact details →</a><?php if ($facebookUrl !== '' || $instagramUrl !== ''): ?><div class="mt-4 flex gap-4 text-sm font-semibold"><?php if ($facebookUrl !== ''): ?><a class="hover:text-white" href="<?= e($facebookUrl) ?>" target="_blank" rel="noopener noreferrer">Facebook</a><?php endif; ?><?php if ($instagramUrl !== ''): ?><a class="hover:text-white" href="<?= e($instagramUrl) ?>" target="_blank" rel="noopener noreferrer">Instagram</a><?php endif; ?></div><?php endif; ?></div>
       </div>
       <div class="mt-8 flex flex-col justify-between gap-2 border-t border-white/15 pt-4 text-xs text-blue-200 sm:flex-row"><span>© <span data-year><?= e(date('Y')) ?></span> <?= e($siteName) ?></span><span><?= e($officeAddress) ?></span></div>
     </div>

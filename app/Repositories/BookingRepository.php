@@ -89,6 +89,136 @@ final class BookingRepository
         return $statement->fetchAll();
     }
 
+    public function notes(int $bookingId): array
+    {
+        $statement = $this->database->prepare(
+            'SELECT n.id, n.note, n.created_at, a.name AS admin_name
+             FROM booking_notes AS n
+             INNER JOIN admins AS a ON a.id = n.admin_id
+             WHERE n.booking_id = ? ORDER BY n.created_at DESC, n.id DESC'
+        );
+        $statement->execute([$bookingId]);
+        return $statement->fetchAll();
+    }
+
+    public function updateDetails(int $bookingId, array $input, int $adminId): void
+    {
+        $allowed = ['departure_location', 'destination', 'journey_date', 'return_date', 'passenger_count', 'passenger_type', 'travel_class', 'customer_message'];
+        $fields = [];
+        foreach ($allowed as $field) {
+            if (!array_key_exists($field, $input)) {
+                continue;
+            }
+            $value = $input[$field];
+            if ($field === 'passenger_count') {
+                if ($value === '' || $value === null) {
+                    $fields[$field] = null;
+                    continue;
+                }
+                $count = filter_var($value, FILTER_VALIDATE_INT);
+                if ($count === false || $count < 1 || $count > 50) {
+                    throw new \InvalidArgumentException('Traveler count must be between 1 and 50.');
+                }
+                $fields[$field] = $count;
+                continue;
+            }
+            if ($value !== null && !is_string($value)) {
+                throw new \InvalidArgumentException('Booking details must be plain text.');
+            }
+            $text = trim((string) ($value ?? ''));
+            $maximum = match ($field) {
+                'departure_location', 'destination' => 180,
+                'journey_date', 'return_date' => 10,
+                'passenger_type', 'travel_class' => 80,
+                'customer_message' => 4000,
+            };
+            if ($this->length($text) > $maximum) {
+                throw new \InvalidArgumentException('A booking detail exceeds its maximum allowed length.');
+            }
+            if (in_array($field, ['journey_date', 'return_date'], true) && $text !== '') {
+                $date = DateTimeImmutable::createFromFormat('!Y-m-d', $text);
+                $errors = DateTimeImmutable::getLastErrors();
+                if ($date === false || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) || $date->format('Y-m-d') !== $text) {
+                    throw new \InvalidArgumentException('Booking dates must use YYYY-MM-DD format.');
+                }
+                $fields[$field] = $text;
+            } else {
+                $fields[$field] = $text === '' ? null : $text;
+            }
+        }
+        if ($fields === []) {
+            throw new \InvalidArgumentException('No booking details were provided for updating.');
+        }
+
+        $this->database->beginTransaction();
+        try {
+            $check = $this->database->prepare('SELECT id FROM bookings WHERE id = ? FOR UPDATE');
+            $check->execute([$bookingId]);
+            if ($check->fetchColumn() === false) {
+                throw new RuntimeException('The requested booking does not exist.');
+            }
+            $statement = $this->database->prepare(
+                'UPDATE bookings SET ' . implode(', ', array_map(static fn (string $field): string => $field . ' = ?', array_keys($fields))) . ' WHERE id = ?'
+            );
+            $statement->execute([...array_values($fields), $bookingId]);
+            (new AdminActivityRepository())->record($this->database, $adminId, 'booking.details_updated', 'booking', $bookingId);
+            $this->database->commit();
+        } catch (\Throwable $exception) {
+            if ($this->database->inTransaction()) {
+                $this->database->rollBack();
+            }
+            throw $exception;
+        }
+    }
+
+    public function addNote(int $bookingId, string $note, int $adminId): int
+    {
+        $note = trim($note);
+        if ($note === '' || $this->length($note) > 10000) {
+            throw new \InvalidArgumentException('Internal notes must contain 1 to 10000 characters.');
+        }
+        $this->database->beginTransaction();
+        try {
+            $check = $this->database->prepare('SELECT id FROM bookings WHERE id = ? FOR UPDATE');
+            $check->execute([$bookingId]);
+            if ($check->fetchColumn() === false) {
+                throw new RuntimeException('The requested booking does not exist.');
+            }
+            $statement = $this->database->prepare('INSERT INTO booking_notes (booking_id, admin_id, note) VALUES (?, ?, ?)');
+            $statement->execute([$bookingId, $adminId, $note]);
+            $noteId = (int) $this->database->lastInsertId();
+            (new AdminActivityRepository())->record($this->database, $adminId, 'booking.note_added', 'booking', $bookingId);
+            $this->database->commit();
+            return $noteId;
+        } catch (\Throwable $exception) {
+            if ($this->database->inTransaction()) {
+                $this->database->rollBack();
+            }
+            throw $exception;
+        }
+    }
+
+    public function delete(int $bookingId, int $adminId): void
+    {
+        $this->database->beginTransaction();
+        try {
+            $check = $this->database->prepare('SELECT id FROM bookings WHERE id = ? FOR UPDATE');
+            $check->execute([$bookingId]);
+            if ($check->fetchColumn() === false) {
+                throw new RuntimeException('The requested booking does not exist.');
+            }
+            (new AdminActivityRepository())->record($this->database, $adminId, 'booking.deleted', 'booking', $bookingId);
+            $statement = $this->database->prepare('DELETE FROM bookings WHERE id = ?');
+            $statement->execute([$bookingId]);
+            $this->database->commit();
+        } catch (\Throwable $exception) {
+            if ($this->database->inTransaction()) {
+                $this->database->rollBack();
+            }
+            throw $exception;
+        }
+    }
+
     public function changeStatus(int $bookingId, string $newStatus, int $adminId, ?string $note = null): bool
     {
         if (!in_array($newStatus, self::STATUSES, true)) {

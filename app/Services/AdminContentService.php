@@ -62,6 +62,20 @@ final class AdminContentService
         });
     }
 
+    public function saveSettings(array $settings): void
+    {
+        $admin = AdminAccess::requireAdmin($this->database);
+        $this->mutate(function () use ($settings, $admin): void {
+            foreach ($settings as $key => $value) {
+                if (!is_string($key)) {
+                    throw new \InvalidArgumentException('Website setting name is invalid.');
+                }
+                $this->content->saveSetting($key, $value, $admin['id']);
+            }
+            $this->activity->record($this->database, $admin['id'], 'settings.updated', 'website_settings', null);
+        });
+    }
+
     public function settings(): array
     {
         AdminAccess::requireAdmin($this->database);

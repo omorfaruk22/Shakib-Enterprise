@@ -40,10 +40,37 @@ final class BookingManagementService
         return $this->bookings->history($id);
     }
 
+    public function notes(int $id): array
+    {
+        AdminAccess::requireAdmin($this->database);
+        if ($this->bookings->find($id) === null) {
+            return [];
+        }
+        return $this->bookings->notes($id);
+    }
+
     public function changeStatus(int $id, string $status, ?string $note = null): bool
     {
         $admin = AdminAccess::requireAdmin($this->database);
         return $this->bookings->changeStatus($id, $status, $admin['id'], $note);
+    }
+
+    public function updateDetails(int $id, array $input): void
+    {
+        $admin = AdminAccess::requireAdmin($this->database);
+        $this->bookings->updateDetails($id, $input, $admin['id']);
+    }
+
+    public function addNote(int $id, string $note): int
+    {
+        $admin = AdminAccess::requireAdmin($this->database);
+        return $this->bookings->addNote($id, $note, $admin['id']);
+    }
+
+    public function delete(int $id): void
+    {
+        $admin = AdminAccess::requireAdmin($this->database);
+        $this->bookings->delete($id, $admin['id']);
     }
 
     public function exportCsv(array $filters = []): string

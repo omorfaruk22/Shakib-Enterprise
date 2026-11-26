@@ -23,6 +23,9 @@ final class ContentRepository
         'homepage_hero_description' => 2000,
         'homepage_meta_title' => 200,
         'homepage_meta_description' => 320,
+        'facebook_url' => 255,
+        'instagram_url' => 255,
+        'map_embed_url' => 2048,
     ];
 
     public function __construct(private readonly PDO $database)
@@ -116,6 +119,23 @@ final class ContentRepository
             $digits = preg_replace('/\D+/', '', $text) ?? '';
             if (preg_match('/^\+?[0-9() .-]+$/D', $text) !== 1 || strlen($digits) < 7 || strlen($digits) > 15) {
                 throw new InvalidArgumentException('Business phone and WhatsApp settings must contain 7 to 15 digits.');
+            }
+        }
+        if ($text !== '' && in_array($key, ['facebook_url', 'instagram_url', 'map_embed_url'], true)) {
+            $parts = parse_url($text);
+            $host = strtolower((string) ($parts['host'] ?? ''));
+            $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+            $valid = $scheme === 'https' && !isset($parts['user']) && !isset($parts['pass']);
+            if ($key === 'facebook_url') {
+                $valid = $valid && ($host === 'facebook.com' || str_ends_with($host, '.facebook.com'));
+            } elseif ($key === 'instagram_url') {
+                $valid = $valid && ($host === 'instagram.com' || str_ends_with($host, '.instagram.com'));
+            } else {
+                $path = (string) ($parts['path'] ?? '');
+                $valid = $valid && in_array($host, ['www.google.com', 'maps.google.com'], true) && str_starts_with($path, '/maps/embed');
+            }
+            if (!$valid) {
+                throw new InvalidArgumentException('Use a secure URL on the matching social or Google Maps domain.');
             }
         }
         $statement = $this->database->prepare(

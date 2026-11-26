@@ -7,8 +7,7 @@ function configure_session_security(array $app): void
         return;
     }
 
-    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    $isHttps = request_is_https();
 
     ini_set('session.use_strict_mode', '1');
     ini_set('session.use_only_cookies', '1');
