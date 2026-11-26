@@ -71,7 +71,7 @@ Work strictly one phase at a time. A phase is complete only when its deliverable
 - Verify ownership with generic errors, CSRF protection, hashed-attempt storage, rate limits, and time-limited session access.
 - Show only the signed-in customer's inquiry references, destinations, dates, and latest status; add sign-out and public navigation links.
 - Add a safe database migration and update installation, requirements, database, and route documentation.
-- **Status:** Implementation complete; end-to-end verification is pending before this phase is declared complete.
+- **Status:** Complete. The customer booking to sign-in to status display to sign-out flow was verified locally; see DEVELOPMENT_PROGRESS.md.
 
 ## Phase 11 — Shared Hosting Deployment & Handover
 

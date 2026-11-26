@@ -113,15 +113,15 @@
 
 ## Phase 10 — Customer Status Portal
 
-- **Status:** Implementation complete; end-to-end verification is pending.
+- **Status:** Complete for local verification.
 - **Features added:** Public “Track inquiry” links; customer sign-in using a booking reference and the phone number used on that inquiry; a customer dashboard listing up to 50 of their latest inquiries and current statuses; POST/CSRF-protected sign-out; 30-minute idle and 12-hour absolute session expiry; login rate limiting by hashed reference/IP; generic mismatch errors.
 - **Privacy behavior:** The portal verifies one booking reference against its linked customer record, then shows only that customer's inquiries. It does not show admin notes or status-history notes. Raw references and IP addresses are not stored in the login-attempt table.
 - **Files created:** `app/Services/CustomerPortalService.php`, `resources/views/pages/customer-login.php`, `resources/views/pages/customer-dashboard.php`, `database/migrations/2026_11_27_add_customer_portal_login_attempts.sql`.
 - **Files modified:** `routes/web.php`, `resources/views/layouts/public.php`, `resources/views/pages/booking-success.php`, `database/sakib_enterprise.sql`, `DATABASE_DESIGN.md`, `REQUIREMENTS.md`, `ROUTES.md`, `README.md`, `DEVELOPMENT_PLAN.md`, and this progress record. `public/assets/css/site.css` was rebuilt.
 - **Database changes:** Applied the idempotent customer portal rate-limit migration to the configured local database.
-- **Checks performed:** PHP syntax lint passed for all six changed PHP files; Tailwind CSS v4.3.5 rebuilt the stylesheet; `git diff --check` passed.
-- **Known limits / inputs needed:** No customer password or SMS/email OTP provider is configured, so sign-in requires the booking reference plus the inquiry phone. A customer must first submit an inquiry to obtain a reference. No end-to-end portal flow was run in this pass; test with a sample inquiry before production. Apply the new migration on any existing production database before deployment.
-- **Remaining tasks:** Run the booking → customer sign-in → status display → sign-out flow after creating a sample inquiry; continue to Phase 11 deployment after review.
+- **Checks performed:** PHP syntax lint passed for all six changed PHP files; Tailwind CSS v4.3.5 rebuilt the stylesheet; `git diff --check` passed. An end-to-end local flow verified inquiry submission, sign-in with its reference and matching phone, display of the inquiry and its initial Pending status, and CSRF-protected sign-out. The temporary booking, its customer (after confirming no other bookings were linked), and its hashed login-attempt row were removed; pre-existing database rows were preserved.
+- **Known limits / inputs needed:** No customer password or SMS/email OTP provider is configured, so sign-in requires the booking reference plus the inquiry phone. A customer must first submit an inquiry to obtain a reference. Apply the new migration on any existing production database before deployment.
+
 
 ## Phase 11 — Shared Hosting Deployment & Handover
 
@@ -131,7 +131,7 @@
 - **Deployment audit:** Documented required runtime PHP 8.2+, `PDO`, `pdo_mysql`, `session`, `fileinfo`, MySQL 8+, a private project root with `public/` as document root, `.htaccess` module/override requirements, production `.env`, HTTPS, initial admin setup, permissions, database migrations, backups, restores, updates, and go-live checks. Updated the environment checker so it matches the documented `fileinfo` upload requirement.
 - **Checks performed:** Static review of `.htaccess`, storage/upload layout, `.env.example`, schema/migration instructions, and PHP environment/database scripts. The environment checker change is limited to including `fileinfo` in its required-extension list.
 - **External documentation consulted:** cPanel's domain document-root and MultiPHP Manager guides, Apache's `.htaccess`/`AllowOverride` documentation, and the PHP PDO_MYSQL manual are linked in `DEPLOYMENT.md`.
-- **Known limits / inputs needed:** No hosting provider, domain, cPanel account, PHP/MySQL versions, extensions, document root, or Apache override settings were provided. No live upload, database import, or domain verification has been performed. Phase 10 customer portal end-to-end flow also still needs a real inquiry reference before deployment.
+- **Known limits / inputs needed:** No hosting provider, domain, cPanel account, PHP/MySQL versions, extensions, document root, or Apache override settings were provided. No live upload, database import, Apache rewrite verification, or domain verification has been performed. Phase 10 was verified locally; production still requires its migration and HTTPS host verification.
 - **Remaining tasks:** Obtain host-specific non-secret details, verify the domain can serve the project's `public/` directory, and complete the go-live checklist before claiming deployment.
 
 
