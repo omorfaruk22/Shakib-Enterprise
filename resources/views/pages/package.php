@@ -35,7 +35,7 @@ $textList = static function (?string $value): array {
         <div><dt class="text-slate-500">Current price</dt><dd class="mt-1 font-bold text-brand-navy"><?php if (is_numeric($package['price'] ?? null) && (float) $package['price'] > 0): ?><?= e((string) ($package['currency'] ?? 'BDT')) ?> <?= e(number_format((float) $package['price'], 2)) ?><?php else: ?>Contact for current price<?php endif; ?></dd></div>
       </dl>
       <p class="mt-5 text-xs text-slate-500">The team must confirm availability, price and itinerary before any booking is final.</p>
-      <a class="mt-6 inline-flex w-full justify-center rounded-full bg-brand-red px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:shadow-lg" href="<?= e(app_url('/contact-us?package=' . rawurlencode((string) $package['slug']))) ?>">Ask about this package →</a>
+      <a class="mt-6 inline-flex w-full justify-center rounded-full bg-brand-red px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:shadow-lg" href="<?= e(app_url('/booking/' . (($package['package_type'] ?? '') === 'holiday' ? 'holiday-package' : 'tour-travel') . '?package=' . rawurlencode((string) $package['slug']))) ?>">Ask about this package →</a>
     </aside>
   </div>
 </section>

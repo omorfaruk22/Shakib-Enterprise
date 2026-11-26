@@ -19,7 +19,7 @@ Set-Location -LiteralPath "D:\Omor Faruk\Project\Shakib EnterPrice"
 powershell -ExecutionPolicy Bypass -File scripts\start-local-mysql.ps1
 ```
 
-The project schema has already been imported locally. If rebuilding the database, create an empty database named `sakib_enterprise` first, then import `database/sakib_enterprise.sql`; this SQL file creates tables only and does not insert a default admin.
+The project schema has already been imported locally. A fresh database install should create an empty database named `sakib_enterprise` first, then import `database/sakib_enterprise.sql`; this SQL file creates tables only and does not insert a default admin. When upgrading a database created before Phase 6, apply `database/migrations/2026_11_26_add_booking_submission_token.sql` exactly once.
 
 To stop the local MySQL process cleanly:
 
@@ -57,4 +57,4 @@ php scripts/check-database.php
 - Import the SQL file using phpMyAdmin, set the real credentials in a protected `.env` file, upload the generated static CSS and assets, and verify PHP/MySQL compatibility.
 - Do not use a public default admin credential. The first-admin setup will be implemented in Phase 8.
 
-The public homepage and Phase 5 content pages are implemented: service listings/details, package listings/details, destination listings/details, About Us, and Contact Us. Public styling uses Tailwind utility classes in the page markup; `site.css` is the compiled static file required by browsers and shared hosting. Booking submission, contact-message storage, and the admin dashboard are scheduled for later phases. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.
+The public homepage, Phase 5 content pages, and Phase 6 booking inquiry system are implemented. Visitors can submit air, ship, bus, tour, and holiday inquiries and receive a reference; an inquiry is not a ticket or a confirmed booking. Public styling uses Tailwind utility classes in the page markup; `site.css` is the compiled static file required by browsers and shared hosting. General contact-message storage and the admin dashboard are scheduled for later phases. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.

@@ -20,6 +20,9 @@ Routes are implemented as PHP pages/controllers compatible with Apache shared ho
 | GET | `/packages/{slug}` | Active tour or holiday package details |
 | GET | `/about-us` | Published About Us content with safe fallback |
 | GET | `/contact-us` | Configured business contact information and inquiry context |
+| GET | `/booking/{service}` | CSRF-protected, service-specific travel inquiry form |
+| POST | `/booking/submit` | Validate, match/create customer, save inquiry transactionally and redirect |
+| GET | `/booking/success/{reference}` | Private, non-cacheable inquiry confirmation; not a ticket confirmation |
 | GET | `/health` | Non-sensitive application liveness check |
 | GET | `/health/database` | Local/private DB connectivity diagnostic; do not expose publicly in production |
 
@@ -28,9 +31,6 @@ Routes are implemented as PHP pages/controllers compatible with Apache shared ho
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET/POST | `/contact-us` | Store and validate contact messages |
-| GET | `/booking/{service}` | Service-specific inquiry form, optionally prefilled from a package |
-| POST | `/booking/submit` | Validate, save inquiry, generate reference, redirect with result |
-| GET | `/booking/success/{reference}` | Confirmation that inquiry was received, not a ticket confirmation |
 | GET | `/whatsapp` | Redirect to configured click-to-chat link with encoded text |
 | GET | `/sitemap.xml` | Sitemap for published public pages/content |
 | GET | `/robots.txt` | Search-crawler rules |

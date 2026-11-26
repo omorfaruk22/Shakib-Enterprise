@@ -166,7 +166,7 @@ final class PublicPagesService
     public function shipRoutes(): array
     {
         return $this->fetchAll(
-            'SELECT origin, destination, description FROM ship_routes WHERE is_active = 1 ORDER BY sort_order ASC, origin ASC LIMIT 30'
+            'SELECT id, origin, destination, description FROM ship_routes WHERE is_active = 1 ORDER BY sort_order ASC, origin ASC LIMIT 30'
         ) ?? [];
     }
 

@@ -23,8 +23,8 @@
 
 ### `customers`
 
-- `id` PK; `full_name`; `phone_normalized` indexed; `email` nullable; `created_at`; `updated_at`.
-- Match likely repeat customers by normalized phone with careful duplicate resolution; do not silently merge uncertain identities.
+- `id` PK; `full_name`; `phone`; `phone_normalized` indexed; `email` nullable; `created_at`; `updated_at`.
+- Match repeat inquiries by normalized phone and update the existing customer record in the same transaction as the booking.
 
 ### `services`
 
@@ -45,7 +45,7 @@
 
 ### `bookings`
 
-- `id` PK; `booking_reference` UNIQUE; `customer_id` FK; `service_type` constrained to the five supported categories; `service_id` nullable FK where relevant; `package_id` nullable FK (only where applicable); `ship_route_id` nullable FK; `departure_location` nullable; `destination` nullable; `journey_date` nullable; `return_date` nullable; `passenger_count` nullable; `passenger_type` nullable; `travel_class` nullable; `customer_message` nullable; `status` constrained to the seven supported statuses; timestamps.
+- `id` PK; `booking_reference` UNIQUE; `submission_token_hash` nullable UNIQUE for duplicate POST protection; `customer_id` FK; `service_type` constrained to the five supported categories; `service_id` nullable FK where relevant; `package_id` nullable FK (only where applicable); `ship_route_id` nullable FK; `departure_location` nullable; `destination` nullable; `journey_date` nullable; `return_date` nullable; `passenger_count` nullable; `passenger_type` nullable; `travel_class` nullable; `customer_message` nullable; `status` constrained to the seven supported statuses; timestamps.
 - Use nullable service-specific columns because not all booking categories share every field; validate required fields by service type.
 - Index `(status, created_at)`, `(service_type, created_at)`, `journey_date`, and `customer_id`.
 

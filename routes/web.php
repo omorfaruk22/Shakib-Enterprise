@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 use App\Database\Connection;
+use App\Helpers\Logger;
+use App\Services\BookingService;
+use App\Services\BookingSubmissionException;
 use App\Services\HomepageService;
 use App\Services\PublicPagesService;
 
@@ -110,6 +113,163 @@ $router->get('/packages/{slug}', static function (array $parameters) use ($pageS
     }
     $description = trim((string) ($package['summary'] ?? '')) ?: 'Package details and travel inquiry information.';
     $renderPage('package', (string) $package['title'], $description, '/packages/' . rawurlencode($slug), ['package' => $package]);
+});
+
+$router->get('/booking/{service}', static function (array $parameters) use ($pageService, $renderPage, $renderNotFound): void {
+    $slug = (string) ($parameters['service'] ?? '');
+    $bookingType = BookingService::definition($slug);
+    $service = $pageService->service($slug);
+    if ($bookingType === null || $service === null) {
+        $renderNotFound();
+        return;
+    }
+
+    start_secure_session();
+    $packageType = $bookingType['type'] === 'tour_package' ? 'tour' : ($bookingType['type'] === 'holiday_package' ? 'holiday' : null);
+    $packages = $packageType !== null ? $pageService->packages($packageType) : [];
+    $requestedPackage = '';
+    $packageSlug = $_GET['package'] ?? '';
+    if (is_string($packageSlug) && $packageSlug !== '' && $packageType !== null) {
+        foreach ($packages as $package) {
+            if (($package['slug'] ?? '') === $packageSlug) {
+                $requestedPackage = $packageSlug;
+                break;
+            }
+        }
+    }
+    $requestedDestination = '';
+    $destinationSlug = $_GET['destination'] ?? '';
+    if (is_string($destinationSlug) && $destinationSlug !== '') {
+        $destination = $pageService->destination($destinationSlug);
+        $requestedDestination = (string) ($destination['name'] ?? '');
+    }
+
+    $renderPage('booking-form', (string) $bookingType['label'], 'Send a travel inquiry to SAKIB ENTERPRISE.', '/booking/' . $slug, [
+        'bookingType' => $bookingType,
+        'service' => $service,
+        'packages' => $packages,
+        'shipRoutes' => $slug === 'ship-ticket' ? $pageService->shipRoutes() : [],
+        'requestedPackage' => $requestedPackage,
+        'requestedDestination' => $requestedDestination,
+        'submissionToken' => issue_booking_submission_token(),
+        'errors' => [],
+        'old' => [],
+    ]);
+});
+
+$router->post('/booking/submit', static function () use ($pageService, $renderPage, $renderNotFound): void {
+    start_secure_session();
+    $slug = isset($_POST['service_slug']) && is_string($_POST['service_slug']) ? trim($_POST['service_slug']) : '';
+    $bookingType = BookingService::definition($slug);
+    $service = $bookingType !== null ? $pageService->service($slug) : null;
+    if ($bookingType === null || $service === null) {
+        $renderNotFound();
+        return;
+    }
+
+    $packageType = $bookingType['type'] === 'tour_package' ? 'tour' : ($bookingType['type'] === 'holiday_package' ? 'holiday' : null);
+    $packages = $packageType !== null ? $pageService->packages($packageType) : [];
+    $shipRoutes = $slug === 'ship-ticket' ? $pageService->shipRoutes() : [];
+    $submissionToken = isset($_POST['_submission_token']) && is_string($_POST['_submission_token'])
+        ? $_POST['_submission_token']
+        : '';
+    if (preg_match('/^[a-f0-9]{64}$/D', $submissionToken) !== 1) {
+        http_response_code(400);
+        $errors = ['_form' => 'This form has expired. Please reload it and try again.'];
+        $renderPage('booking-form', (string) $bookingType['label'], 'Send a travel inquiry to SAKIB ENTERPRISE.', '/booking/' . $slug, [
+            'bookingType' => $bookingType, 'service' => $service, 'packages' => $packages, 'shipRoutes' => $shipRoutes,
+            'requestedPackage' => '', 'requestedDestination' => '', 'submissionToken' => issue_booking_submission_token(),
+            'errors' => $errors, 'old' => $_POST,
+        ]);
+        return;
+    }
+
+    if (isset($_SESSION['_booking_submitted'][$submissionToken])) {
+        redirect('/booking/success/' . rawurlencode((string) $_SESSION['_booking_submitted'][$submissionToken]), 303);
+    }
+
+    $issuedAt = $_SESSION['_booking_forms'][$submissionToken] ?? null;
+    $csrf = isset($_POST['_csrf']) && is_string($_POST['_csrf']) ? $_POST['_csrf'] : '';
+    $sessionCsrf = isset($_SESSION['_csrf']) && is_string($_SESSION['_csrf']) ? $_SESSION['_csrf'] : '';
+    $errors = [];
+    if (!is_int($issuedAt) || $issuedAt < time() - 7200) {
+        $errors['_form'] = 'This form has expired. Please reload it and try again.';
+        http_response_code(400);
+    } elseif ($csrf === '' || $sessionCsrf === '' || !hash_equals($sessionCsrf, $csrf)) {
+        $errors['_form'] = 'The security check expired. Please review the form and submit it again.';
+        http_response_code(403);
+    } elseif (trim(is_string($_POST['company_website'] ?? null) ? $_POST['company_website'] : '') !== '') {
+        $errors['_form'] = 'The submission could not be verified. Please try again.';
+        http_response_code(422);
+    } else {
+        $bookingService = new BookingService();
+        $validation = $bookingService->validate($_POST, $bookingType);
+        $errors = $validation['errors'];
+        if ($errors !== []) {
+            http_response_code(422);
+        } elseif (!$pageService->databaseAvailable()) {
+            $errors['_form'] = 'We could not save your inquiry because the database is unavailable. Please try again later.';
+            http_response_code(503);
+        } else {
+            try {
+                $result = $bookingService->store($validation['data'], $bookingType, $submissionToken);
+                unset($_SESSION['_booking_forms'][$submissionToken]);
+                $_SESSION['_booking_submitted'] ??= [];
+                $_SESSION['_booking_submitted'][$submissionToken] = $result['reference'];
+                foreach ($_SESSION['_booking_submitted'] as $usedToken => $reference) {
+                    if (!is_string($reference) || !preg_match('/^SE-[0-9]{6}-[A-F0-9]{16}$/D', $reference)) {
+                        unset($_SESSION['_booking_submitted'][$usedToken]);
+                    }
+                }
+                if (count($_SESSION['_booking_submitted']) > 20) {
+                    $_SESSION['_booking_submitted'] = array_slice($_SESSION['_booking_submitted'], -20, null, true);
+                }
+                session_write_close();
+                redirect('/booking/success/' . rawurlencode($result['reference']), 303);
+            } catch (BookingSubmissionException $exception) {
+                $errors = $exception->errors;
+                http_response_code(422);
+            } catch (Throwable $exception) {
+                Logger::error('A public booking inquiry could not be saved: ' . $exception->getMessage(), BASE_PATH . '/storage/logs/app.log');
+                $errors['_form'] = 'We could not save your inquiry right now. Please try again later.';
+                http_response_code(503);
+            }
+        }
+    }
+
+    $requestedPackage = isset($_POST['package_slug']) && is_string($_POST['package_slug']) ? $_POST['package_slug'] : '';
+    $requestedDestination = isset($_POST['destination']) && is_string($_POST['destination']) ? $_POST['destination'] : '';
+    $renderPage('booking-form', (string) $bookingType['label'], 'Send a travel inquiry to SAKIB ENTERPRISE.', '/booking/' . $slug, [
+        'bookingType' => $bookingType,
+        'service' => $service,
+        'packages' => $packages,
+        'shipRoutes' => $shipRoutes,
+        'requestedPackage' => $requestedPackage,
+        'requestedDestination' => $requestedDestination,
+        'submissionToken' => $submissionToken,
+        'errors' => $errors,
+        'old' => $_POST,
+    ]);
+});
+
+$router->get('/booking/success/{reference}', static function (array $parameters) use ($renderPage, $renderNotFound): void {
+    $reference = strtoupper((string) ($parameters['reference'] ?? ''));
+    try {
+        $confirmation = (new BookingService())->findPublicConfirmation($reference);
+    } catch (Throwable $exception) {
+        Logger::error('A booking confirmation page could not be loaded: ' . $exception->getMessage(), BASE_PATH . '/storage/logs/app.log');
+        http_response_code(503);
+        $renderPage('not-found', 'Confirmation temporarily unavailable', 'Your inquiry may have been saved. Please check again later.', '/booking/confirmation-unavailable');
+        return;
+    }
+    if ($confirmation === null) {
+        $renderNotFound();
+        return;
+    }
+    header('Cache-Control: private, no-store, max-age=0');
+    $renderPage('booking-success', 'Inquiry received', 'Your travel inquiry has been saved. The team will contact you.', '/booking/success/' . rawurlencode($reference), [
+        'confirmation' => $confirmation,
+    ]);
 });
 
 $router->get('/about-us', static function () use ($pageService, $renderPage): void {

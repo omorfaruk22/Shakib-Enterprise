@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS ship_routes (
 CREATE TABLE IF NOT EXISTS bookings (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   booking_reference VARCHAR(40) NOT NULL,
+  submission_token_hash CHAR(64) NULL,
   customer_id BIGINT UNSIGNED NOT NULL,
   service_type ENUM('air_ticket','ship_ticket','bus_ticket','tour_package','holiday_package') NOT NULL,
   service_id BIGINT UNSIGNED NULL,
@@ -134,6 +135,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uq_bookings_reference (booking_reference),
+  UNIQUE KEY uq_bookings_submission_token_hash (submission_token_hash),
   KEY idx_bookings_status_created (status, created_at),
   KEY idx_bookings_service_created (service_type, created_at),
   KEY idx_bookings_journey_date (journey_date),

@@ -28,11 +28,11 @@ $inquiryUrl = static function (string $subject) use ($whatsappUrl, $email, $phon
     return $phoneHref !== '' ? 'tel:' . $phoneHref : app_url('/contact-us');
 };
 $servicePath = static fn (string $slug): string => match ($slug) {
-    'air-ticket' => '/air-tickets',
-    'ship-ticket' => '/ship-tickets',
-    'bus-ticket' => '/bus-tickets',
-    'tour-travel' => '/tour-travel',
-    'holiday-package' => '/holiday-packages',
+    'air-ticket' => '/booking/air-ticket',
+    'ship-ticket' => '/booking/ship-ticket',
+    'bus-ticket' => '/booking/bus-ticket',
+    'tour-travel' => '/booking/tour-travel',
+    'holiday-package' => '/booking/holiday-package',
     default => '/services/' . rawurlencode($slug),
 };
 $publicImage = static function (?string $path): ?string {

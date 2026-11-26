@@ -26,7 +26,7 @@ require BASE_PATH . '/resources/views/partials/page-heading.php';
       <p class="mt-4 text-slate-600"><?= e((string) ($siteSettings['office_address'] ?? "Cox's Bazar Sadar, Bangladesh")) ?></p>
       <?php if (trim((string) ($siteSettings['office_hours'] ?? '')) !== ''): ?><h3 class="mt-6 font-bold text-brand-navy">Opening hours</h3><p class="mt-1 whitespace-pre-line text-slate-600"><?= e((string) $siteSettings['office_hours']) ?></p><?php endif; ?>
       <div class="mt-7 rounded-2xl bg-slate-50 p-5 text-sm leading-6 text-slate-600">For a travel inquiry, include your requested service, route or destination, travel date and traveler count. Availability, prices and booking confirmation are provided by the business.</div>
-      <p class="mt-4 text-xs text-slate-500">The website contact form and saved inquiry workflow will be added in the upcoming booking and database phases.</p>
+      <p class="mt-4 text-xs text-slate-500">Booking inquiries can be submitted from the relevant service page. General contact messages will be saved after the contact-message phase is implemented.</p>
     </aside>
   </div>
 </section>
