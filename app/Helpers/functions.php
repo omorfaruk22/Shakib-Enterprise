@@ -36,6 +36,17 @@ function csrf_token(): string
     return $_SESSION['_csrf'];
 }
 
+function is_valid_csrf_token(mixed $submitted): bool
+{
+    start_secure_session();
+    $sessionToken = $_SESSION['_csrf'] ?? null;
+    return is_string($submitted)
+        && $submitted !== ''
+        && is_string($sessionToken)
+        && strlen($sessionToken) === 64
+        && hash_equals($sessionToken, $submitted);
+}
+
 function issue_booking_submission_token(): string
 {
     start_secure_session();

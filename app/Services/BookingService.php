@@ -250,6 +250,12 @@ final class BookingService
                 $data['customer_message'],
             ]);
 
+            $statusHistory = $database->prepare(
+                'INSERT INTO booking_status_history (booking_id, admin_id, old_status, new_status, note)
+                 VALUES (?, NULL, NULL, ?, ?)'
+            );
+            $statusHistory->execute([(int) $database->lastInsertId(), 'pending', 'Inquiry received']);
+
             $database->commit();
             return ['reference' => $reference, 'duplicate' => false];
         } catch (BookingSubmissionException $exception) {

@@ -19,12 +19,15 @@ Routes are implemented as PHP pages/controllers compatible with Apache shared ho
 | GET | `/packages` | Active package listing; optional `?type=tour` or `?type=holiday` filter |
 | GET | `/packages/{slug}` | Active tour or holiday package details |
 | GET | `/about-us` | Published About Us content with safe fallback |
-| GET | `/contact-us` | Configured business contact information and inquiry context |
+| GET | `/contact-us` | Contact form, configured contact information, and inquiry context |
+| POST | `/contact-us` | Validate and persist a general contact message; CSRF protected |
 | GET | `/booking/{service}` | CSRF-protected, service-specific travel inquiry form |
 | POST | `/booking/submit` | Validate, match/create customer, save inquiry transactionally and redirect |
 | GET | `/booking/success/{reference}` | Private, non-cacheable inquiry confirmation; not a ticket confirmation |
 | GET | `/health` | Non-sensitive application liveness check |
 | GET | `/health/database` | Local/private DB connectivity diagnostic; do not expose publicly in production |
+
+Phase 7 adds PDO management services for catalog/content CRUD, filtered lists, booking status history, and CSV export. Admin routes remain closed until Phase 8 adds login and dashboard access controls.
 
 ## 2 Planned Public Routes (later phases)
 

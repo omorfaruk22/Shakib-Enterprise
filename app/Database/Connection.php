@@ -26,12 +26,14 @@ final class Connection
         );
 
         try {
-            return new PDO($dsn, $config['username'], $config['password'], [
+            $database = new PDO($dsn, $config['username'], $config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::ATTR_STRINGIFY_FETCHES => false,
             ]);
+            $database->exec("SET time_zone = '+00:00'");
+            return $database;
         } catch (PDOException $exception) {
             throw new RuntimeException('Database connection failed. Verify MySQL is running and the .env settings are correct.', 0, $exception);
         }

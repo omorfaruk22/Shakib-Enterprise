@@ -5,6 +5,7 @@ use App\Database\Connection;
 use App\Helpers\Logger;
 use App\Services\BookingService;
 use App\Services\BookingSubmissionException;
+use App\Services\ContactMessageService;
 use App\Services\HomepageService;
 use App\Services\PublicPagesService;
 
@@ -279,7 +280,7 @@ $router->get('/about-us', static function () use ($pageService, $renderPage): vo
     $renderPage('about', $title, $description, '/about-us', ['aboutPage' => $aboutPage]);
 });
 
-$router->get('/contact-us', static function () use ($pageService, $renderPage): void {
+$contactContext = static function () use ($pageService): array {
     $requestedService = '';
     $requestedSlug = $_GET['service'] ?? '';
     if (is_string($requestedSlug) && $requestedSlug !== '') {
@@ -298,11 +299,68 @@ $router->get('/contact-us', static function () use ($pageService, $renderPage): 
         $destination = $pageService->destination($destinationSlug);
         $requestedDestination = (string) ($destination['name'] ?? '');
     }
-    $renderPage('contact', 'Contact Us', 'Contact the business about travel services, destinations and packages.', '/contact-us', [
+    return [
         'requestedService' => $requestedService,
         'requestedPackage' => $requestedPackage,
         'requestedDestination' => $requestedDestination,
+    ];
+};
+
+$renderContact = static function (array $state = []) use ($contactContext, $renderPage): void {
+    $context = $contactContext();
+    $renderPage('contact', 'Contact Us', 'Contact SAKIB ENTERPRISE about travel services, destinations and packages.', '/contact-us', [
+        ...$context,
+        'csrfToken' => csrf_token(),
+        'errors' => $state['errors'] ?? [],
+        'old' => $state['old'] ?? [],
+        'messageSent' => (bool) ($state['messageSent'] ?? false),
     ]);
+};
+
+$router->get('/contact-us', static function () use ($renderContact): void {
+    start_secure_session();
+    $state = is_array($_SESSION['_contact_form'] ?? null) ? $_SESSION['_contact_form'] : [];
+    unset($_SESSION['_contact_form']);
+    $state['messageSent'] = ($_SESSION['_contact_sent'] ?? false) === true;
+    unset($_SESSION['_contact_sent']);
+    $renderContact($state);
+});
+
+$router->post('/contact-us', static function () use ($renderContact): void {
+    start_secure_session();
+    if (!is_valid_csrf_token($_POST['_csrf'] ?? null)) {
+        http_response_code(403);
+        $renderContact([
+            'errors' => ['_form' => 'The security check expired. Please review the form and submit it again.'],
+            'old' => $_POST,
+        ]);
+        return;
+    }
+
+    if (trim(is_string($_POST['company_website'] ?? null) ? $_POST['company_website'] : '') !== '') {
+        $_SESSION['_contact_sent'] = true;
+        redirect('/contact-us', 303);
+    }
+
+    $contactMessages = new ContactMessageService();
+    $validation = $contactMessages->validate($_POST);
+    if ($validation['errors'] !== []) {
+        $_SESSION['_contact_form'] = ['errors' => $validation['errors'], 'old' => $_POST];
+        redirect('/contact-us', 303);
+    }
+
+    try {
+        $contactMessages->store($validation['data']);
+        $_SESSION['_contact_sent'] = true;
+        redirect('/contact-us', 303);
+    } catch (Throwable $exception) {
+        Logger::error('A public contact message could not be saved: ' . $exception->getMessage(), BASE_PATH . '/storage/logs/app.log');
+        $_SESSION['_contact_form'] = [
+            'errors' => ['_form' => 'We could not send your message right now. Please try again later.'],
+            'old' => $_POST,
+        ];
+        redirect('/contact-us', 303);
+    }
 });
 
 $router->get('/health', static function (): void {

@@ -19,7 +19,7 @@ Set-Location -LiteralPath "D:\Omor Faruk\Project\Shakib EnterPrice"
 powershell -ExecutionPolicy Bypass -File scripts\start-local-mysql.ps1
 ```
 
-The project schema has already been imported locally. A fresh database install should create an empty database named `sakib_enterprise` first, then import `database/sakib_enterprise.sql`; this SQL file creates tables only and does not insert a default admin. When upgrading a database created before Phase 6, apply `database/migrations/2026_11_26_add_booking_submission_token.sql` exactly once.
+The project schema has already been imported locally. A fresh database install should create an empty database named `sakib_enterprise` first, then import `database/sakib_enterprise.sql`; this SQL file creates tables only and does not insert a default admin. When upgrading an older database, apply `database/migrations/2026_11_26_add_booking_submission_token.sql` if it predates Phase 6, then apply `database/migrations/2026_11_26_backfill_booking_status_history.sql` once to record a baseline for existing inquiries. New inquiries write their initial `pending` history entry automatically.
 
 To stop the local MySQL process cleanly:
 
@@ -57,4 +57,4 @@ php scripts/check-database.php
 - Import the SQL file using phpMyAdmin, set the real credentials in a protected `.env` file, upload the generated static CSS and assets, and verify PHP/MySQL compatibility.
 - Do not use a public default admin credential. The first-admin setup will be implemented in Phase 8.
 
-The public homepage, Phase 5 content pages, and Phase 6 booking inquiry system are implemented. Visitors can submit air, ship, bus, tour, and holiday inquiries and receive a reference; an inquiry is not a ticket or a confirmed booking. Public styling uses Tailwind utility classes in the page markup; `site.css` is the compiled static file required by browsers and shared hosting. General contact-message storage and the admin dashboard are scheduled for later phases. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.
+The public homepage, content pages, booking inquiry system, and Phase 7 database integration are implemented. Visitors can submit air, ship, bus, tour, holiday, and general contact inquiries; a travel inquiry is not a ticket or a confirmed booking. Public styling uses Tailwind utility classes in the page markup; `site.css` is the compiled static file required by browsers and shared hosting. Admin-only CRUD, search, status history, and export services are in place, while login and dashboard routes remain scheduled for Phase 8. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.

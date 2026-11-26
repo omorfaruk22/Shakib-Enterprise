@@ -58,6 +58,7 @@
 
 - `id` PK; `booking_id` FK; `admin_id` nullable FK for system-created events; `old_status`; `new_status`; `note` nullable; `created_at`.
 - Insert status change and update booking in one transaction.
+- New inquiries start with a system-created `pending` event in the same transaction as the booking. Existing databases can backfill one baseline event per inquiry with `database/migrations/2026_11_26_backfill_booking_status_history.sql`.
 
 ### `contact_messages`
 
