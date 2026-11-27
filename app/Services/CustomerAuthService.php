@@ -43,7 +43,9 @@ final class CustomerAuthService
         if ($phone === '' || preg_match('/^\+?[0-9() .-]+$/D', $phone) !== 1 || strlen($digits) < 7 || strlen($digits) > 15) {
             $errors['phone'] = 'Enter a phone number with 7 to 15 digits.';
         }
-        if (strlen($password) < 12 || strlen($password) > 72) {
+        if (str_contains($password, "\0")) {
+            $errors['password'] = 'This password contains an unsupported hidden character. Please type it again.';
+        } elseif (strlen($password) < 12 || strlen($password) > 72) {
             $errors['password'] = 'Use a password between 12 and 72 characters.';
         }
         if ($password !== $confirmation) {
@@ -152,9 +154,11 @@ final class CustomerAuthService
         $ipHash = hash('sha256', $ipAddress !== '' ? $ipAddress : 'unknown');
         $this->database->exec('DELETE FROM customer_account_login_attempts WHERE attempted_at < UTC_TIMESTAMP() - INTERVAL 1 DAY');
 
-        $dummyHash = password_hash(random_bytes(32), PASSWORD_DEFAULT);
+        $dummyHash = password_hash('customer-auth-dummy-password-safe', PASSWORD_DEFAULT);
+        $passwordContainsNull = str_contains($password, "\0");
+        $verificationPassword = $passwordContainsNull || strlen($password) > 4096 ? '' : $password;
         if ($this->rateLimited($emailHash, $ipHash)) {
-            password_verify($password, $dummyHash);
+            password_verify($verificationPassword, $dummyHash);
             return ['ok' => false, 'rate_limited' => true];
         }
 
@@ -173,7 +177,7 @@ final class CustomerAuthService
         $hash = is_array($account) && is_string($account['password_hash'] ?? null)
             ? $account['password_hash']
             : $dummyHash;
-        $passwordMatches = strlen($password) <= 4096 && password_verify($password, $hash);
+        $passwordMatches = !$passwordContainsNull && strlen($password) <= 4096 && password_verify($verificationPassword, $hash);
         if ($account === null || !$passwordMatches) {
             $this->recordAttempt($emailHash, $ipHash, false);
             return ['ok' => false, 'rate_limited' => false];

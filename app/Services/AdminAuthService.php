@@ -66,7 +66,9 @@ final class AdminAuthService
         if ($this->length($email) > 190 || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             $errors['email'] = 'Enter a valid email address.';
         }
-        if (strlen($password) < 12 || strlen($password) > 72) {
+        if (str_contains($password, "\0")) {
+            $errors['password'] = 'This password contains an unsupported hidden character. Please type it again.';
+        } elseif (strlen($password) < 12 || strlen($password) > 72) {
             $errors['password'] = 'Use a password between 12 and 72 bytes.';
         }
         if ($password !== $confirmation) {
@@ -123,9 +125,11 @@ final class AdminAuthService
             $identifier = '__empty_login__';
         }
 
-        $dummyHash = password_hash(random_bytes(24), PASSWORD_DEFAULT);
+        $dummyHash = password_hash('admin-auth-dummy-password-safe', PASSWORD_DEFAULT);
+        $passwordContainsNull = str_contains($password, "\0");
+        $verificationPassword = $passwordContainsNull || strlen($password) > 4096 ? '' : $password;
         if ($this->rateLimited($identifier, $ipAddress)) {
-            password_verify($password, $dummyHash);
+            password_verify($verificationPassword, $dummyHash);
             return ['ok' => false, 'rate_limited' => true];
         }
 
@@ -142,7 +146,7 @@ final class AdminAuthService
         $hash = is_array($admin) && is_string($admin['password_hash'] ?? null)
             ? $admin['password_hash']
             : $dummyHash;
-        $passwordMatches = password_verify($password, $hash);
+        $passwordMatches = !$passwordContainsNull && strlen($password) <= 4096 && password_verify($verificationPassword, $hash);
         if ($admin === null || !$passwordMatches) {
             $this->recordAttempt($identifier, $ipAddress, false);
             return ['ok' => false, 'rate_limited' => false];
