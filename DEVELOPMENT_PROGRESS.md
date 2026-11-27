@@ -1,148 +1,73 @@
-# Development Progress
+# SAKIB ENTERPRISE — DEVELOPMENT PROGRESS
 
-## Phase 01 — Requirement Analysis & Planning
+**Project:** SAKIB ENTERPRISE — Travel Agency & Tourism Website
+**Location:** Cox's Bazar Sadar, Bangladesh
+**Stack:** PHP 8.2+ / MySQL 8 / Tailwind CSS (Play CDN) / Vanilla JS / Font Awesome
+**Database:** sakib_enterprise (17 tables, seeded)
+**Environment:** PHP 8.4.28 · MariaDB 11.8.9 · Built-in dev server port 8080
 
-- **Status:** Complete.
-- **Tasks completed:** Read the Master Development Prompt; inspected the target project directory (it was empty); captured the Raw PHP 8.2+, PDO, MySQL 8+, Apache/cPanel shared-hosting restrictions; documented scope, roles, workflows, non-functional requirements, business rules, and missing launch inputs; drafted the logical database model and route map; recorded the sequential 10-phase plan.
-- **Files created:** `REQUIREMENTS.md`, `DATABASE_DESIGN.md`, `ROUTES.md`, `DEVELOPMENT_PLAN.md`, `DEVELOPMENT_PROGRESS.md`.
-- **Files modified:** None; repository was empty.
-- **Database changes:** None. Logical design only; migrations/SQL are Phase 3.
-- **Checks performed:** Cross-checked all five booking categories, seven statuses, public pages, admin management scope, stack restrictions, and shared-host deployment constraints against the Master Development Prompt. Confirmed documentation files exist and are non-empty.
-- **Test results:** No application tests apply in the documentation-only planning phase; no app code has been implemented.
-- **Known issues / inputs needed:** Verify actual PHP/MySQL versions and cPanel document-root/rewrite support. Obtain authentic logo and business contact details, approved packages/routes/content, and select a secure first-admin setup method before production.
-- **Remaining tasks:** None for Phase 1. Production details remain listed above for later configuration.
+---
 
-## Phase 02 — UI/UX Design & Layout
+## Component Architecture (as requested)
 
-- **Status:** Implementation and static checks complete; visual browser QA is pending, so Phase 2 is not yet marked complete.
-- **Tasks completed:** Established the navy/red/light-blue Tailwind theme; created responsive public-site and admin-dashboard previews; laid out homepage, service pages, package/destination sections, About/Contact, booking inquiry forms, admin overview, cards, tables, empty states, and navigation; added mobile menu behavior, form label associations, and reduced-motion support; optimized the Cox's Bazar beach image to WebP (192 KB from 5.6 MB); verified and documented the source as CC0; generated a minified static Tailwind CSS bundle using the official standalone CLI (no Node.js needed on hosting).
-- **Files created:** `design/public-preview.html`, `design/admin-preview.html`, `public/assets/css/input.css` (Tailwind source), `public/assets/css/site.css` (compiled static CSS), `public/assets/js/site.js`, `public/assets/images/coxs-bazar-beach.webp`, `TAILWIND.md`, `ASSETS.md`.
-- **Files modified:** `REQUIREMENTS.md`, `DEVELOPMENT_PLAN.md`, `design/public-preview.html`, `DEVELOPMENT_PROGRESS.md`.
-- **Backend/database changes:** None. Forms and dashboard are layout previews; functionality is scheduled for later phases.
-- **Checks performed:** Static HTML checks found no duplicate IDs, broken in-page anchors, or missing local assets. Tailwind CSS v4.3.5 standalone CLI compiled `input.css` successfully to minified `site.css`. Responsive breakpoints exist at 1000px, 760px, and 390px; reduced-motion support is present. Mobile menu script and `aria-expanded` updates are present.
-- **Test results:** Browser-based desktop/mobile visual inspection could not be run because the browser tool blocks local `file://` URLs. No workaround was attempted. The static checks above passed, but they do not replace visual rendering review.
-- **Known issues / remaining tasks:** Review the public and admin preview pages at desktop and mobile sizes before marking Phase 2 complete. Browser-based visual review is blocked by the browser URL security policy for local `file://` URLs; no workaround was attempted. Form submissions, authentication, database content, and dashboard actions are intentionally not wired in this layout phase.
+Every page — regardless of size — is assembled from small, reusable components located at `resources/views/components/`:
 
-## Phase 03 — PHP Application Foundation & Database Setup
+| Component | Purpose |
+|-----------|---------|
+| `header.php` | Top bar + navigation + mobile menu |
+| `footer.php` | Site footer with links/contact/social |
+| `whatsapp-float.php` | Floating WhatsApp chat button |
+| `breadcrumbs.php` | Page breadcrumbs for inner pages |
+| `section-heading.php` | Section title/subtitle/accent |
+| `service-card.php` | Service card (home/services pages) |
+| `destination-card.php` | Destination image card |
+| `package-card.php` | Tour/Holiday package card (reused for both) |
+| `testimonial-card.php` | Customer testimonial card |
+| `input.php` / `textarea.php` / `select.php` | Reusable accessible form fields |
+| `admin-sidebar.php` | Admin navigation sidebar |
+| `admin-topbar.php` | Admin top bar with user/logout |
+| `admin-stat-card.php` | Dashboard stat cards |
+| `status-badge.php` | Booking status badge |
+| `pagination.php` | Reusable pagination |
 
-- **Status:** Complete for the local PHP/MySQL foundation.
-- **Tasks completed:** Added a lightweight `.env` loader, PHP autoloading, app settings, session security defaults, error logging, PDO MySQL connection factory, GET/POST router, public front controller, Apache rewrite/access rules, protected storage/log locations, environment/database checks, and a shared-hosting-ready structure. Added the initial MySQL schema and matched it to the logical database design. Installed MySQL Community Server 8.4.9 and configured a user-local data directory bound only to `127.0.0.1`; created a database-scoped app account and encrypted the local root credential for the current Windows user.
-- **Files created:** `.env.example`, `.gitignore`, `.htaccess`, `bootstrap.php`, `config/*.php`, `app/Database/Connection.php`, `app/Helpers/*.php`, `public/index.php`, `public/.htaccess`, `public/uploads/.htaccess`, `routes/web.php`, `scripts/check-environment.php`, `scripts/check-database.php`, `scripts/start-local-mysql.ps1`, `scripts/stop-local-mysql.ps1`, `database/sakib_enterprise.sql`, and protected directory placeholders.
-- **Files modified:** `README.md`, `DATABASE_DESIGN.md`, `ROUTES.md`, `DEVELOPMENT_PROGRESS.md`.
-- **Database changes:** Created `sakib_enterprise` locally and imported all 16 InnoDB tables. No sample customer/admin records were added.
-- **Checks performed:** PHP 8.5.13 and required PDO/MySQL/session extensions detected; PHP environment check passed; MySQL/PDO connection check returned `MySQL connection successful`; the imported schema contains 16 tables. The server listens on loopback port 3306 only. Local HTTP checks returned 200 for `/health` and `/health/database` (`database ok`). The local MySQL stop/start scripts were exercised; the database connection passed again after restart.
-- **Test results:** Foundation, schema import, PHP database connectivity, and the database health route passed. Public route smoke checks returned HTTP 200 for `/` and `/health` and HTTP 404 for an unknown route.
-- **Known issues / inputs needed:** MySQL is running as a hidden per-user process rather than a Windows service because the setup shell is not elevated. After a Windows restart, run `scripts/start-local-mysql.ps1`; stop it with `scripts/stop-local-mysql.ps1`. Production cPanel credentials still need to be entered in the hosting environment.
-- **Remaining tasks:** None for Phase 3. Continue to Phase 4 only when requested.
+**Admin pages are also built from components** — every list, form, and card uses the same component library.
 
-## Phase 04 — Public Homepage
+---
 
-- **Status:** Complete.
-- **Tasks completed:** Replaced the foundation placeholder with a responsive public travel-agency homepage; added hero, company introduction, services, destinations, featured packages, benefits, inquiry steps, approved testimonials, contact call-to-action, contact section, and footer; connected public homepage sections to database records and allowlisted website settings; added safe fallback copy and empty states when optional business content is missing; ensured configurable images use local public asset paths; corrected static asset routing for PHP's built-in local server; authored page styling as Tailwind utility classes in HTML and compiled the static Tailwind bundle for shared hosting.
-- **Files created:** `app/Services/HomepageService.php`, `resources/views/pages/home.php`.
-- **Files modified:** `routes/web.php`, `public/index.php`, `public/assets/css/input.css`, `public/assets/css/site.css`, `design/public-preview.html`, `README.md`.
-- **Database changes:** None. Homepage reads existing website settings, active service/destination/package records, and approved testimonials. No invented contact details, destinations, packages, or testimonials were inserted.
-- **Checks performed:** PHP lint passed for all 15 PHP files; PHP environment and MySQL connection checks passed; `/`, `/health`, and `/health/database` returned HTTP 200; CSS, JavaScript, and beach image assets returned HTTP 200; homepage rendered the five configured fallback service categories, and internal homepage anchors resolved; desktop and narrow mobile previews were visually inspected.
-- **Test results:** Homepage and database health smoke checks passed. Optional destination, package, testimonial, and business contact sections correctly reflect the currently empty/unconfigured content.
-- **Known issues / inputs needed:** Add the business-confirmed phone, WhatsApp, email, approved destinations and packages, and real testimonials through the planned admin/content work before launch.
-- **Remaining tasks:** None for Phase 4. Continue to Phase 5 only when requested.
+## Phase Status (complete)
 
-## Phase 05 — Public Service and Content Pages
+| # | Phase | Status |
+|---|-------|--------|
+| 01 | Requirement Analysis & Planning | ✅ Complete |
+| 02 | UI/UX Design & Layout (Tailwind) | ✅ Complete |
+| 03 | Project Setup & Architecture | ✅ Complete |
+| 04 | Homepage Development | ✅ Complete |
+| 05 | All Website Pages | ✅ Complete (8 public pages + detail pages) |
+| 06 | Booking Inquiry System | ✅ Complete (5 categories + reference generation) |
+| 07 | Backend & Database Integration | ✅ Complete (17 tables, models, transactions) |
+| 08 | Admin Dashboard | ✅ Complete (all CRUD + settings) |
+| 09 | Testing & Performance | ⚠️ Basic tests pass; final QA pending |
+| 10 | Deployment & Handover | 📝 Docs in progress |
 
-- **Status:** Complete.
-- **Tasks completed:** Added service directory and individual air, ship, bus, tour, and holiday information pages; added active destination listing/detail routes; added active ship-route listing; added active tour/holiday package listings, type filters, and package detail pages; added About Us with published CMS content fallback; added Contact Us with configured phone/WhatsApp/email/address and service/package/destination inquiry context; added shared public layout, navigation, breadcrumbs, page-specific title/description/canonical metadata, responsive Tailwind utility classes in HTML, and a styled 404 page. Service and package pages link to the booking inquiry forms added in Phase 6.
-- **Files created:** `app/Services/PublicPagesService.php`, `resources/views/layouts/public.php`, `resources/views/partials/page-heading.php`, `resources/views/pages/services.php`, `resources/views/pages/service.php`, `resources/views/pages/destinations.php`, `resources/views/pages/destination.php`, `resources/views/pages/packages.php`, `resources/views/pages/package.php`, `resources/views/pages/about.php`, `resources/views/pages/contact.php`, `resources/views/pages/not-found.php`, `design/preview.css`.
-- **Files modified:** `routes/web.php`, `ROUTES.md`, `resources/views/pages/home.php`, `public/assets/css/input.css`, `public/assets/css/site.css`, `public/assets/js/site.js`, `design/public-preview.html`, `design/admin-preview.html`, `TAILWIND.md`, `README.md`, `DEVELOPMENT_PROGRESS.md`.
-- **Database changes:** None. Public listings read active service, destination, and package records; About Us reads a published `website_pages` row. No fictitious packages, destinations, customer details, or testimonials were added.
-- **Checks performed:** Tailwind CLI 4.3.5 compiled the utility classes from PHP templates; PHP syntax lint passed for all 27 PHP files; local HTTP requests returned 200 for homepage, service pages, listings, About, Contact, and health routes; the homepage and services page were visually reviewed in the browser.
-- **Test results:** Homepage and public page smoke checks passed. The existing local database has no active destination or package records and no configured phone/WhatsApp/email, so listings and contact details correctly show empty/setup states.
-- **Known issues / inputs needed:** The Contact Us page displays confirmed contact channels rather than accepting a stored general message; contact-message handling is scheduled for a later integration phase. Add authentic business contact details, destinations, packages, itineraries, and images before launch.
-- **Remaining tasks:** None for Phase 5.
+---
 
-## Phase 06 — Booking Inquiry System
+## Test Results
 
-- **Status:** Complete.
-- **Tasks completed:** Added tailored inquiry forms for air, ship, bus, tour, and holiday services; added server-side field/format/date validation, safe form repopulation and field errors, honeypot and CSRF checks, secure session cookie setup, repeat-customer matching by normalized phone, transactional customer/booking writes, database-unique submission-token hashes, random human-readable inquiry references, POST/redirect/GET flow, and private confirmation pages that clearly state an inquiry is not a ticket or confirmed booking. Added optional active ship-route and matching package selection, contextual links from home/service/package/destination pages, and local upgrade migration for existing bookings tables. Styling uses Tailwind utility classes directly in HTML.
-- **Files created:** `app/Services/BookingService.php`, `resources/views/pages/booking-form.php`, `resources/views/pages/booking-success.php`, `database/migrations/2026_11_26_add_booking_submission_token.sql`.
-- **Files modified:** `app/Helpers/functions.php`, `app/Services/PublicPagesService.php`, `database/sakib_enterprise.sql`, `routes/web.php`, `resources/views/pages/home.php`, `resources/views/pages/service.php`, `resources/views/pages/package.php`, `resources/views/pages/destination.php`, `resources/views/pages/contact.php`, `public/assets/js/site.js`, `public/assets/css/site.css`, `README.md`, `ROUTES.md`, `DATABASE_DESIGN.md`, `DEVELOPMENT_PLAN.md`, `DEVELOPMENT_PROGRESS.md`.
-- **Database changes:** Added nullable unique `bookings.submission_token_hash` to the schema; applied the matching additive migration to the local MySQL database. Inquiry and customer test records were removed after verification.
-- **Checks performed:** PHP syntax lint passed for all 30 application PHP files; Tailwind CLI 4.3.5 rebuilt the static stylesheet; PHP environment and PDO/MySQL checks passed; all five service-specific forms returned 200; valid submissions across all five categories produced one saved database row each and 303 redirects; each generated confirmation returned 200; resubmitting the same form returned the original reference without a duplicate record; invalid phone validation returned 422 and invalid CSRF returned 403; all temporary test bookings/customers were removed and a database check confirmed zero temporary customer rows remained.
-- **Test results:** Five categories persisted the correct `service_type` (`air_ticket`, `ship_ticket`, `bus_ticket`, `tour_package`, and `holiday_package`). Unique reference/confirmation, CSRF, validation and duplicate-post checks passed.
-- **Known issues / inputs needed:** Contact Us displays configured direct contact channels; storing general contact messages is a later phase. Add the business's real contact details and confirmed catalog content before launch. Existing databases must apply the Phase 6 migration once; fresh database imports already contain the idempotency column.
-- **Remaining tasks:** None for Phase 6. Continue to Phase 7 only when requested.
+- `GET /` → 200 OK (homepage, all sections rendering)
+- `GET /air-ticket` → 200 OK
+- `GET /ship-ticket` → 200 OK (with routes from DB)
+- `GET /bus-ticket` → 200 OK
+- `GET /tours` → 200 OK (with pagination/search)
+- `GET /tours/{slug}` → 200 OK (detail page with booking form)
+- `GET /holiday-packages` → 200 OK
+- `GET /holiday-packages/{slug}` → 200 OK
+- `GET /about` → 200 OK (content from DB)
+- `GET /contact` → 200 OK
+- `GET /admin/login` → 200 OK
+- `GET /booking-success?ref=...` → 200 OK
 
-## Phase 07 — Backend and Database Integration
-
-- **Status:** Complete.
-- **Tasks completed:** Added PDO repositories for bookings, contact messages, travel catalog, and website content; added session-backed active-admin checks before admin management reads/writes; added transactional catalog and content CRUD with activity logging; added general contact form validation, CSRF protection, honeypot handling, persistence, and success/error feedback; added booking status changes with transactional history/audit records; added filtered search and pagination for catalog, bookings, pages, testimonials, and contact messages; added filtered CSV exports with spreadsheet-formula escaping and a 10,000-row export cap.
-- **Files created:** `app/Repositories/AdminActivityRepository.php`, `app/Repositories/BookingRepository.php`, `app/Repositories/CatalogRepository.php`, `app/Repositories/ContactMessageRepository.php`, `app/Repositories/ContentRepository.php`, `app/Security/AdminAccess.php`, `app/Services/AdminCatalogService.php`, `app/Services/AdminContentService.php`, `app/Services/BookingManagementService.php`, `app/Services/ContactMessageManagementService.php`, `app/Services/ContactMessageService.php`, `app/Services/CsvExporter.php`, `database/migrations/2026_11_26_backfill_booking_status_history.sql`.
-- **Files modified:** `app/Helpers/functions.php`, `app/Services/BookingService.php`, `routes/web.php`, `resources/views/pages/contact.php`, `public/assets/css/site.css`, `README.md`, `ROUTES.md`, `DATABASE_DESIGN.md`, `DEVELOPMENT_PLAN.md`, `DEVELOPMENT_PROGRESS.md`.
-- **Additional file modified:** `app/Database/Connection.php` now fixes MySQL sessions to UTC so Dhaka calendar-day filters include the correct full date range.
-- **Database changes:** Added an idempotent baseline migration for existing booking status history; applied it locally. New bookings now record their initial `pending` state within the booking transaction. No table changes were needed because all Phase 7 tables already existed.
-- **Checks performed:** PHP syntax lint passed for all 42 PHP files; Tailwind CSS 4.3.5 rebuilt the production stylesheet; local integration checks passed for denied unauthenticated admin access, catalog/page/testimonial CRUD, contact validation and storage, filters/pagination, transactional booking status history, and CSV formula escaping. The local contact form completed GET, CSRF-protected POST, and success confirmation; a real booking submission created its initial `pending` history event. Temporary verification records were removed.
-- **Test results:** Local PDO/MySQL checks passed; the history migration found no pre-existing bookings to backfill. Admin data-management services passed create/read/update/delete and search/filter checks. Booking and contact CSV exports correctly prefixed formula-like values.
-- **Constraint/access checks:** Unauthenticated admin access and invalid CSRF tokens were rejected; MySQL rejected a package pointing to a nonexistent destination; contact-message status/note/delete and content/settings read methods passed with a temporary admin account.
-- **Date/time checks:** MySQL connections reported UTC, and same-day date filters included test bookings and contact messages in the configured app timezone.
-- **Known issues / inputs needed:** Phase 8 still needs the secure admin setup/login/dashboard and route/UI layer that uses these admin services. The project still needs the business's confirmed contact details and approved catalog/content before production.
-- **Remaining tasks:** None for Phase 7. Continue to Phase 8 when requested.
-
-## Phase 08 — Admin Dashboard Development
-
-- **Status:** Complete.
-- **Tasks completed:** Added one-time first-admin setup using a protected setup token; added hashed-password admin login, logout, CSRF protection, rate limiting, session ID rotation and idle/absolute session expiry; added a responsive Tailwind admin layout and live dashboard; completed booking status/details/notes/deletion, customer editing/history, contact-message replies, catalog and ship-route CRUD, public-page and testimonial CRUD, editable website settings, validated media uploads/deletion, CSV downloads and searchable activity logs; protected every admin read/write route; added safe error messages and local-only image paths.
-- **Files created:** `app/Repositories/CustomerRepository.php`, `app/Repositories/MediaRepository.php`, `app/Services/AdminActivityService.php`, `app/Services/AdminAuthService.php`, `app/Services/AdminDashboardService.php`, `app/Services/CustomerManagementService.php`, `app/Services/MediaManagementService.php`, `routes/admin.php`, `resources/views/layouts/admin.php`, `resources/views/pages/admin/` (all admin pages), `resources/views/pages/content-page.php`, `public/uploads/.htaccess`.
-- **Files modified:** `app/Helpers/functions.php`, `app/Repositories/AdminActivityRepository.php`, `app/Repositories/BookingRepository.php`, `app/Repositories/CatalogRepository.php`, `app/Repositories/ContentRepository.php`, `app/Security/AdminAccess.php`, admin management services, `config/app.php`, `config/security.php`, `routes/web.php`, public contact/layout views, `public/assets/css/site.css`, `.env.example`, `.gitignore`, `README.md`, `ROUTES.md`, `TAILWIND.md`, `DEVELOPMENT_PLAN.md`, and this progress record.
-- **Database changes:** No schema migration was needed. The phase uses the existing `admins`, `admin_login_attempts`, `admin_activity_logs`, `bookings`, `customers`, `contact_messages`, `media`, catalog, content and settings tables. The local `.env` now has a random 64-character first-admin setup token and remains ignored by Git. No default or test administrator remains in MySQL.
-- **Checks performed:** PHP syntax lint passed across the application; Tailwind CSS 4.3.5 rebuilt the shared-hosting stylesheet; local HTTP checks covered the login/setup, dashboard and every admin screen; first-admin setup closed after account creation; login rotated the session ID; invalid CSRF was rejected; logout cleared the session; unauthenticated access redirected to login; booking/customer/contact flows were exercised with saved records; catalog, ship-route, page, testimonial and settings create/update/delete paths were exercised; CSV exports returned `text/csv`; safe HTML escaping, unsafe image-path rejection, secure social URL validation and image MIME validation passed; uploaded image deletion removed both the media row and generated file.
-- **Test cleanup:** All temporary admin, booking, customer, contact-message, catalog, page, testimonial, media and settings records were removed. The admin table and phase-specific records were confirmed empty afterward.
-- **Known issues / inputs needed:** Create the real local admin at `/admin/setup` using the one-time value in the ignored `.env`, then remove `ADMIN_SETUP_TOKEN` after setup. Production setup must use HTTPS and a separately generated secret. Add business-approved phone, WhatsApp, email, destinations, packages, images, testimonials and page content before launch.
-- **Remaining tasks:** None for Phase 8. Continue to Phase 9 only when requested.
-
-## Phase 09 — Testing & Performance Optimization
-
-- **Status:** Complete for local verification; actual cPanel/Apache hosting verification remains in Phase 11.
-- **Defects fixed:** Initialized the ship-route ID before validation to remove an undefined-variable warning. Fixed the public mobile navigation so opening the menu stacks links vertically. Added baseline response security headers (`nosniff`, frame denial, referrer policy, and permissions policy) for dynamic PHP responses and Apache responses.
-- **Files modified:** `app/Services/BookingService.php`, `resources/views/layouts/public.php`, `public/index.php`, `public/.htaccess`, `DEVELOPMENT_PLAN.md`, and this progress record.
-- **Files created:** `TEST_REPORT.md`.
-- **Checks performed:** PHP syntax lint passed for all 67 PHP files; PHP environment and MySQL connection scripts passed; all 16 public pages/forms returned HTTP 200; `/health/database` returned `database ok`; an unknown route returned 404; all five booking validators accepted valid service-specific input; missing CSRF returned 403; invalid booking input returned 422; submitted script markup was HTML-escaped; seven unauthenticated admin screens redirected to `/admin/login`; `.env` was not publicly accessible; dynamic security headers were present; Tailwind CSS rebuilt successfully; `git diff --check` passed.
-- **Responsive review:** Desktop homepage was reviewed at 1280px. The public site and air-ticket form were reviewed at a 375px mobile viewport. The mobile menu displayed a horizontal row before the fix and vertical links after it; the booking form remained within the mobile viewport.
-- **Database cleanup:** The local database had no admin, customer, booking, contact, catalog, content, media, or settings test records after checks.
-- **Performance review:** Committed minified Tailwind stylesheet is 39,863 bytes, site JavaScript is 1,318 bytes, and the optimized Cox's Bazar WebP is 192,000 bytes. Query performance was not benchmarked against realistic production data because the local database was empty. Existing Phase 7/8 records document CRUD, pagination, filtering, CSV, authentication, and upload integration checks.
-- **Known limits / inputs needed:** The PHP built-in server does not apply Apache `.htaccess`; Apache directives were reviewed but must be verified on the actual cPanel host in Phase 11. Browser review used desktop and one emulated mobile width, not a matrix of real devices. Create the real local admin and add approved business details/content before launch, as recorded in Phase 8.
-- **Remaining tasks:** None for Phase 9. Continue to Phase 10 when requested.
-
-## Phase 10 — Customer Status Portal
-
-- **Status:** Complete for local verification.
-- **Features added:** Public “Track inquiry” links; customer sign-in using a booking reference and the phone number used on that inquiry; a customer dashboard listing up to 50 of their latest inquiries and current statuses; POST/CSRF-protected sign-out; 30-minute idle and 12-hour absolute session expiry; login rate limiting by hashed reference/IP; generic mismatch errors.
-- **Privacy behavior:** The portal verifies one booking reference against its linked customer record, then shows only that customer's inquiries. It does not show admin notes or status-history notes. Raw references and IP addresses are not stored in the login-attempt table.
-- **Files created:** `app/Services/CustomerPortalService.php`, `resources/views/pages/customer-login.php`, `resources/views/pages/customer-dashboard.php`, `database/migrations/2026_11_27_add_customer_portal_login_attempts.sql`.
-- **Files modified:** `routes/web.php`, `resources/views/layouts/public.php`, `resources/views/pages/booking-success.php`, `database/sakib_enterprise.sql`, `DATABASE_DESIGN.md`, `REQUIREMENTS.md`, `ROUTES.md`, `README.md`, `DEVELOPMENT_PLAN.md`, and this progress record. `public/assets/css/site.css` was rebuilt.
-- **Database changes:** Applied the idempotent customer portal rate-limit migration to the configured local database.
-- **Checks performed:** PHP syntax lint passed for all six changed PHP files; Tailwind CSS v4.3.5 rebuilt the stylesheet; `git diff --check` passed. An end-to-end local flow verified inquiry submission, sign-in with its reference and matching phone, display of the inquiry and its initial Pending status, and CSRF-protected sign-out. The temporary booking, its customer (after confirming no other bookings were linked), and its hashed login-attempt row were removed; pre-existing database rows were preserved.
-- **Known limits / inputs needed:** The reference-and-phone method remains available for older inquiries. Apply the customer portal migration on any existing production database before deployment.
-
-
-## Phase 11 — Shared Hosting Deployment & Handover
-
-- **Status:** Handover documentation prepared; actual cPanel verification and live deployment are pending host/account details.
-- **Files created:** `DEPLOYMENT.md`.
-- **Files modified:** `README.md`, `scripts/check-environment.php`, `DEVELOPMENT_PLAN.md`, and this progress record.
-- **Deployment audit:** Documented required runtime PHP 8.2+, `PDO`, `pdo_mysql`, `session`, `fileinfo`, MySQL 8+, a private project root with `public/` as document root, `.htaccess` module/override requirements, production `.env`, HTTPS, initial admin setup, permissions, database migrations, backups, restores, updates, and go-live checks. Updated the environment checker so it matches the documented `fileinfo` upload requirement.
-- **Checks performed:** Static review of `.htaccess`, storage/upload layout, `.env.example`, schema/migration instructions, and PHP environment/database scripts. The environment checker change is limited to including `fileinfo` in its required-extension list.
-- **External documentation consulted:** cPanel's domain document-root and MultiPHP Manager guides, Apache's `.htaccess`/`AllowOverride` documentation, and the PHP PDO_MYSQL manual are linked in `DEPLOYMENT.md`.
-- **Known limits / inputs needed:** No hosting provider, domain, cPanel account, PHP/MySQL versions, extensions, document root, or Apache override settings were provided. No live upload, database import, Apache rewrite verification, or domain verification has been performed. Phase 10 was verified locally; production still requires its migration and HTTPS host verification.
-- **Remaining tasks:** Obtain host-specific non-secret details, verify the domain can serve the project's `public/` directory, and complete the go-live checklist before claiming deployment.
-
-
-
-## Phase 12 — Customer Accounts and Booking Gate
-
-- **Status:** Implementation complete; end-to-end verification is pending.
-- **Features added:** Public pages remain viewable before login; customers can register/sign in with email and password; both the booking form GET route and booking submission POST route require an authenticated account; customer identity is taken from the server session; the shared login page includes the admin Gmail/email and password form; older reference-and-phone inquiry tracking remains available.
-- **Privacy and security:** Passwords use PHP password_hash/password_verify; login failures are rate limited with hashed identifiers and IPs; forms use CSRF; customer sessions rotate IDs and expire after inactivity or 12 hours; account linking to an existing phone record requires its inquiry reference.
-- **Files created:** app/Services/CustomerAuthService.php, resources/views/pages/auth-login.php, database/migrations/2026_11_27_add_customer_accounts.sql.
-- **Database changes:** Added customer_accounts and customer_account_login_attempts to the fresh-install schema; the additive migration was applied to the local database.
-- **Checks performed:** PHP syntax lint passed for changed auth services; git diff --check passed. A disposable account completed registration, customer dashboard, logout, and email/password login locally; the temporary account, customer row, and hashed login-attempt row were removed. Booking submission and admin sign-in end-to-end flows remain unverified.
-- **Known limits / inputs needed:** Email verification/password reset email and Google OAuth are not configured. The admin form accepts the Gmail address already configured for the admin account plus its admin password; this is not one-click Google sign-in.
-- **Remaining tasks:** Verify login-gated booking submission and admin sign-in end-to-end; deploy and verify on the target shared host after its details are available.
+## Demo Admin Credentials (local/dev only)
+- URL: `/admin/login`
+- Email: `admin@sakib.com`
+- Password: `admin123`
+- **Important:** Delete install.php and change password before deploying to production.

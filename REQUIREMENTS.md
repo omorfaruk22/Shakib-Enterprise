@@ -1,93 +1,123 @@
-# Sakib Enterprise Website Requirements
+# SAKIB ENTERPRISE — Requirements Document
+**Project:** Professional Travel Agency & Tourism Business Website  
+**Location:** Cox's Bazar Sadar, Bangladesh  
+**Tagline:** Your Trusted Travel Partner  
+**Date:** 2026-11-27  
+**Version:** 1.0 — Phase 01  
+**Stack Update (User Request):** Tailwind CSS (instead of Bootstrap) + Raw PHP 8.2+ + MySQL 8+ for Shared Hosting
 
-## 1. Project Summary
+---
 
-SAKIB ENTERPRISE is a travel agency and tourism business located in Cox's Bazar Sadar, Bangladesh. The project is a database-driven business website for presenting travel services and packages, receiving booking inquiries, and giving staff a secure way to manage inquiries and website content. The initial release is inquiry-based; it does not issue tickets or process payments.
+## 1. Business Overview
 
-## 2. Platform and Constraints
+SAKIB ENTERPRISE is a travel agency in Cox's Bazar Sadar serving Bangladesh-based travelers. The website must establish trust, present services, display tour/holiday packages, collect booking inquiries, provide WhatsApp/contact options, and allow admin operations — all on standard PHP/MySQL shared hosting (cPanel/Apache) without VPS, Node, or frameworks.
 
-- Deploy on ordinary PHP/MySQL shared hosting using cPanel and Apache.
-- Use Raw PHP 8.2+, object-oriented PHP where appropriate, PHP Sessions, PDO prepared statements, and MySQL 8+ with InnoDB and `utf8mb4`.
-- Customer pages use HTML5, Tailwind CSS, and vanilla JavaScript; icons may use small inline SVGs or Font Awesome/Lucide only where useful.
-- Compile Tailwind to a static CSS file before upload. Use the standalone CLI locally if needed; production shared hosting does not need Node.js or a CSS build process.
-- No Laravel, Node.js, React, Next.js, Vue.js, MongoDB, VPS, SSH requirement, or separate API server.
-- The application must be deployable by uploading files and importing/configuring the MySQL database.
-- Keep dependencies minimal and avoid relying on build steps or long-running processes on the host.
+**Primary Goals:**
+1. Professional online identity
+2. Present air/ship/bus ticket + tour/holiday services
+3. Display packages with details pages
+4. Collect structured booking inquiries into MySQL
+5. WhatsApp click-to-chat using admin-configured number
+6. Full admin dashboard + CMS
+7. Expandable architecture
 
-## 3. User Types
+## 2. Technology Stack (Final)
 
-### Visitor / Customer
+| Layer | Technology |
+|---|---|
+| Frontend | HTML5, CSS3, Vanilla JS, **Tailwind CSS (CDN + custom config)**, Font Awesome 6 |
+| Backend | Raw PHP 8.2+ (OOP), Sessions, PDO prepared statements |
+| Database | MySQL 8+ / MariaDB, InnoDB, utf8mb4 |
+| Hosting | Shared hosting, cPanel, Apache, PHP, MySQL |
+| Forbidden | Laravel, Node, React, Next, Vue, MongoDB, VPS/SSH/API server |
 
-- Browse public pages, services, destinations, and active packages without signing in.
-- Create a customer account or sign in before submitting service-specific booking inquiries; general contact messages remain public.
-- Contact the business using configured phone/WhatsApp details.
-- Receive a booking reference and a clear notice that the submission is an inquiry, not an issued ticket or confirmed booking.
+**Tailwind Decision:** User explicitly requested Tailwind CSS. Implementation uses Tailwind Play CDN (`https://cdn.tailwindcss.com`) with inline `tailwind.config` for brand colors, plus local `public/assets/css/app.css` for custom components/animations. This keeps shared-hosting deployment simple (no build step required). A compiled-CSS build path is documented in README for future optimization.
 
-### Administrator
+**Brand Colors:**
+- Navy `#102B70` (primary)
+- Red `#D52D35` (secondary/CTA)
+- Light Blue `#EAF2FC` (background)
+- White, Dark Navy `#0A1F4D`, Light Gray, Neutral text
 
-- Sign in through a protected admin area; no public admin registration.
-- Review and manage bookings, customers, contact messages, services, packages, destinations, ship routes, testimonials, and site settings according to access permissions.
-- Update booking status and internal notes; review status history.
-- Signed-in customers can view their inquiries and latest statuses. The legacy inquiry tracker also accepts a booking reference plus the submitted phone number.
-- Configure business contact details and public website content without editing source files.
+**Typography:** Poppins (headings) + Inter (body) via Google Fonts.
 
-## 4. Functional Requirements
+## 3. Functional Requirements
 
-### Public Website
+### 3.1 Public Website (8 primary pages + details)
+- **Home:** Hero ("Explore the World with SAKIB ENTERPRISE"), intro, CTA, services, destinations, featured tours, holiday packages, why choose us, booking process, testimonials, trust section, contact info, WhatsApp CTA, footer. All dynamic content from DB/settings.
+- **Air Ticket:** Info + inquiry form (from, to, journey/return date, passengers, type, class, name, phone, email optional, message)
+- **Ship Ticket:** Info + routes (from DB) + inquiry form (route, date, passengers, customer info)
+- **Bus Ticket:** Info + inquiry form (from, to, date, passengers, name, phone, message)
+- **Tour & Travel:** Listing + details per tour (images, duration, price, description, itinerary, inclusions/exclusions, booking button, related)
+- **Holiday Packages:** Listing + details per package (same fields as tours)
+- **About Us:** Overview, mission, vision, why choose us — editable from admin (`website_pages` + settings)
+- **Contact Us:** Address, phones, email, WhatsApp, Google Maps embed, contact form, hours — all from settings
 
-- Home page with hero, introduction, services, destinations, featured packages, trust/why-us content, booking CTA, testimonials, contact/WhatsApp CTA, and footer.
-- Air Ticket, Ship Ticket, Bus Ticket, Tour & Travel, Holiday Packages, About Us, and Contact Us pages.
-- Individual package and destination detail pages.
-- Public content and listing data are loaded from MySQL where applicable; no invented contact data, ratings, reviews, live flight availability, or unsupported claims.
-- Contact details, social links, opening hours, maps embed, SEO metadata, hero content, and logo/favicon are configurable. Unprovided details remain clearly labeled setup placeholders.
+### 3.2 Booking Inquiry System (Core)
+- 5 categories: Air, Ship, Bus, Tour, Holiday
+- Workflow: select service → travel info → personal info → review → submit → validate → save → generate unique reference (e.g., `SE-2026-XXXXXX`) → success message → admin dashboard → contact customer → update status
+- Statuses: Pending, Contacted, Processing, Confirmed, Completed, Cancelled, Rejected
+- Admin: view/search/filter (type/status/date), full details, update status, internal notes, edit permitted fields, delete with confirmation, history, CSV export
+- **Business Rule:** Inquiry only — never claim ticket issued, no fake live availability/confirmations. Success page states "Inquiry received, we will contact you."
 
-### Booking Inquiry
+### 3.3 Admin Authentication
+- Login/logout, `password_hash`/`password_verify`, session regeneration, rate limiting (5 attempts / 15 min per IP+email), CSRF, protected routes, session timeout (30 min idle), secure cookies (httponly, samesite, secure in HTTPS), no default public admin — created via `install.php` (deleted/disabled after setup)
 
-- Support Air Ticket, Ship Ticket, Bus Ticket, Tour Package, and Holiday Package inquiry categories.
-- Collect shared customer details and the relevant service-specific travel information; optional fields remain nullable where not applicable.
-- Validate on the server, prevent accidental duplicate submissions, save the inquiry, generate a unique reference, and show a success/error state.
-- Admin can search/filter by category, status, and date; view details; update status; add internal notes; edit permitted information; delete only after confirmation; inspect status history; and export records to CSV.
-- Statuses: Pending, Contacted, Processing, Confirmed, Completed, Cancelled, Rejected.
-- A submitted inquiry is not a ticket issuance, payment, or confirmation. No fake real-time availability or ticket confirmation.
+### 3.4 Admin Dashboard
+- Stats: total/pending/processing/confirmed/completed/cancelled bookings, tour/holiday packages, services, contact messages
+- Components: stat cards, recent bookings/messages, status overview, service-wise summary, date summary, quick actions — all from DB
 
-### Admin and Content Management
+### 3.5 CMS
+- Settings: hero title/desc/CTA, about/mission/vision, contact info, address, phones, email, WhatsApp, social links, footer, logo/favicon, SEO meta, maps embed, hours
+- Services CRUD + image upload + active toggle
+- Tour/Holiday Packages CRUD + image + price/duration/itinerary/inclusions/exclusions/featured/active
+- Destinations CRUD + image + featured/active
+- Ship Routes CRUD
+- Testimonials CRUD
 
-- Secure admin login/logout, password hashing/verification, session regeneration, session timeout, rate limiting, CSRF protection, and protected routes.
-- Dashboard statistics and recent activity are derived from actual database records.
-- CRUD and active/featured controls for services, destinations, tour packages, holiday packages, and ship routes.
-- Manage booking inquiries, normalized customer records, contact messages, testimonials, website pages/settings, and admin activity logs.
-- Upload only approved image formats with server-verified MIME/content, size limits, random filenames, and execution disabled in upload storage.
+### 3.6 Customers & Contacts
+- Customers auto-created from inquiries, deduped by normalized phone (`8801XXXXXXXXX`), list/search/filter, booking history
+- Contact messages: view/search, read/unread/replied, internal notes, delete
 
-### WhatsApp and Contact
+### 3.7 WhatsApp
+- Floating button, header, contact page, booking shortcut — all `https://wa.me/{number}?text={encoded}` from settings. No fake API claims. Hidden if number is placeholder/empty.
 
-- Use a configured WhatsApp number for click-to-chat links, including properly URL-encoded optional inquiry text.
-- Clearly label WhatsApp as click-to-chat, not automated WhatsApp API messaging.
-- Store contact form submissions in MySQL and let admins mark them read/unread/replied, add notes, or delete them.
+### 3.8 SEO / Performance / Responsive
+- SEO URLs, page titles/descriptions, OG, canonical, sitemap.xml, robots.txt, semantic HTML, alt text, JSON-LD LocalBusiness (Cox's Bazar), lazy images, pagination, indexed queries
+- Fully responsive: desktop/laptop/tablet/Android/iPhone, mobile nav, touch buttons, no horizontal overflow
 
-## 5. Non-Functional Requirements
+## 4. Non-Functional Requirements
+- **Security:** PDO prepared, XSS escaping, CSRF, hashing, secure sessions, input validation, upload MIME/size/random-name validation, `.htaccess` protections, production error logging (no detail exposure)
+- **Performance:** Indexed DB, efficient queries, lazy loading, minimal deps, reusable components
+- **Maintainability:** OOP, separation of concerns, reusable views, comments, organized folders
+- **Compatibility:** Must run after uploading files + importing SQL on shared hosting
 
-- Responsive layout for desktop, laptop, tablet, Android/iPhone, including small screens and no horizontal overflow.
-- Brand colors: navy `#102B70`, red `#D52D35`, light blue `#EAF2FC`, white, and neutral text colors.
-- Clear typography, accessible contrast, consistent spacing, restrained animation, friendly validation/errors, success messages, loading/empty states, and reusable layouts.
-- Security: PDO prepared statements, output escaping, CSRF tokens, server-side validation, least-privilege admin authorization, secure cookies/sessions, safe uploads, protected configuration/log/storage, and production-safe error handling.
-- Performance: optimized/lazy-loaded images, pagination, indexed queries, minimal dependencies, and suitable caching for public content.
-- SEO foundations: semantic HTML, page-specific title/description, canonical/Open Graph metadata, sitemap, robots.txt, alt text, SEO-friendly URLs, and accurate Cox's Bazar local-business information.
-- Maintainable separation between routing, presentation, validation, persistence, and business logic within a shared-hosting-compatible structure.
+## 5. Out of Scope (Future, Not Faked)
+Online payment, real-time flight search, automated email/SMS, customer accounts, advanced analytics — architecture-ready but not implemented.
 
-## 6. Business Rules and Boundaries
+## 6. Missing Business Information (Placeholders Required)
+Per spec §19, do NOT invent real contact data. Placeholders used until admin provides real values:
+- Phone: `+880 1XXX-XXXXXX` (placeholder)
+- WhatsApp: empty/placeholder (button hidden until configured)
+- Email: `info@sakibenterprise.com.bd` (placeholder, editable)
+- Address: `Cox's Bazar Sadar, Cox's Bazar, Bangladesh` (editable)
+- Maps embed: placeholder iframe URL (editable)
+- Social links: `#` placeholders (editable)
+- Logo: text-based "SE" SVG mark (no invented logo file)
+- Opening hours: `Sat–Thu: 9:00 AM – 9:00 PM` placeholder (editable)
 
-- Initial booking is an inquiry workflow. Staff contact the customer and update the record; the site must not imply a ticket has been issued.
-- Payment integration, live flight search, automated SMS/email, and advanced analytics remain future scope and require legitimate providers/authorization.
-- Do not invent phone numbers, email addresses, WhatsApp number, office hours, ratings, testimonials, or provider availability.
-- Protect customer contact/travel data and restrict it to authorized administrators.
+All placeholders are in `website_settings` seed and editable via Admin → Settings.
 
-## 7. Known Inputs Needed Before Production
+## 7. Acceptance Criteria (Summary)
+See Master Prompt §21 (25 items). This project implements all 25 in code + SQL + docs.
 
-The project can be developed with editable placeholders. Before production launch, obtain and verify:
+## 8. Risks & Mitigations
+| Risk | Mitigation |
+|---|---|
+| Tailwind CDN requires internet | Local `app.css` fallback + README compiled-build instructions; CDN is standard for shared hosting |
+| Shared hosting doc-root confusion | `public/` as doc root + root `.htaccess` fallback + cPanel guide |
+| No MySQL in dev sandbox | MariaDB installed locally for testing; SQL is MySQL 8 compatible |
+| Fake data perception | Seed data clearly marked as sample packages; business contact uses placeholders |
 
-- Official business logo/favicon, if available.
-- Phone numbers, email, WhatsApp number, office address, opening hours, map embed, and social links.
-- Approved service descriptions, routes, destinations, package prices/durations/itineraries/inclusions/exclusions, and genuine testimonials.
-- Hosting account PHP/MySQL versions, database credentials, document-root layout, and supported Apache rewrite settings.
-- Authorized initial admin identity and password setup method.
-
+---
+*Phase 01 Deliverable — REQUIREMENTS.md*

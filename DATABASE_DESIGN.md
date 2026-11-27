@@ -1,123 +1,127 @@
-# Sakib Enterprise Database Design
+# SAKIB ENTERPRISE — Database Design
+**Engine:** MySQL 8+ / MariaDB, InnoDB, utf8mb4_unicode_ci  
+**File:** `database/sakib_enterprise.sql` (schema + seed)  
+**Import:** phpMyAdmin or `mysql < database/sakib_enterprise.sql`
 
-## 1. Conventions
+## Entity-Relationship Overview
 
-- MySQL 8+, InnoDB, `utf8mb4` character set and a Unicode collation.
-- Use unsigned integer primary keys unless a later deployment constraint calls for another type.
-- Store times in UTC where practical and render using the configured business timezone.
-- Add `created_at` and `updated_at` to mutable business records; use soft deletion for content where restoring/auditing is useful.
-- Add indexes for common list filters/searches and enforce relationships with foreign keys.
-- Avoid storing card/payment credentials. No payment processing is in the initial release.
+```
+admins 1---* admin_login_attempts
+admins 1---* booking_notes
+admins 1---* booking_status_history
+admins 1---* admin_activity_logs
+admins 1---* media
 
-## 2. Proposed Tables
+customers 1---* bookings
+services 1---* bookings (nullable service_id)
+destinations 1---* tour_packages
+destinations 1---* holiday_packages
+ship_routes 1---* bookings (nullable ship_route_id)
 
-### `admins`
+bookings 1---* booking_notes
+bookings 1---* booking_status_history
+```
 
-- `id` PK; `name`; `email` UNIQUE; `password_hash`; `role`; `is_active`; `last_login_at` nullable; `created_at`; `updated_at`.
-- Registration is not public. Create the first admin through a one-time protected setup flow, then disable/remove that setup route.
+## Tables (17)
 
-### `admin_login_attempts`
+### 1. `admins`
+| Column | Type | Notes |
+|---|---|---|
+| id | BIGINT UNSIGNED PK AI | |
+| name | VARCHAR(100) | |
+| email | VARCHAR(191) UNIQUE | login |
+| password_hash | VARCHAR(255) | `password_hash()` |
+| role | ENUM('super_admin','admin') DEFAULT 'admin' | |
+| status | ENUM('active','inactive') DEFAULT 'active' | |
+| last_login_at | TIMESTAMP NULL | |
+| created_at / updated_at | TIMESTAMP | |
 
-- `id` PK; normalized `login_identifier`; `ip_hash` or appropriately minimized IP data; `attempted_at`; `was_successful`.
-- Index `(login_identifier, attempted_at)` and `(ip_hash, attempted_at)` for rate limiting; expire old records by retention policy.
+### 2. `admin_login_attempts`
+id PK, email VARCHAR(191), ip_address VARCHAR(45), success TINYINT(1), attempted_at TIMESTAMP. Index (email, ip_address, attempted_at). Used for rate limiting.
 
-### `customers`
+### 3. `customers`
+id PK, name VARCHAR(150), phone VARCHAR(30), phone_normalized VARCHAR(20) UNIQUE NULL (8801XXXXXXXXX), email VARCHAR(191) NULL, address VARCHAR(255) NULL, created_at/updated_at. Deduped on inquiry submit.
 
-- `id` PK; `full_name`; `phone`; `phone_normalized` indexed; `email` nullable; `created_at`; `updated_at`.
-- Match repeat inquiries by normalized phone and update the existing customer record in the same transaction as the booking.
-- Customer accounts live in customer_accounts with a unique sign-in email and password_hash; booking ownership still uses customers.id. No plaintext password is stored.
-- Existing inquiry access can continue through a booking reference and the phone number on the linked customer record.
+### 4. `services`
+id PK, slug VARCHAR(100) UNIQUE, name VARCHAR(150), short_description VARCHAR(255), description TEXT, icon VARCHAR(50) (Font Awesome class), image VARCHAR(255) NULL, is_active TINYINT(1), sort_order INT, timestamps. Seed: air-ticket, ship-ticket, bus-ticket, tour-travel, holiday-packages.
 
-### `customer_portal_login_attempts`
+### 5. `destinations`
+id PK, name VARCHAR(150), slug VARCHAR(150) UNIQUE, description TEXT, image VARCHAR(255) NULL, is_featured TINYINT(1), is_active TINYINT(1), sort_order INT, timestamps. Seed: Cox's Bazar, Saint Martin, Sundarban, Sajek Valley, Bandarban, Kuakata, Rangamati, Sreemangal.
 
-- `id` PK; SHA-256 hashes of the booking reference and IP address; `attempted_at`; `was_successful`.
-- Use the hashes for short-window rate limiting without storing raw booking references or IP addresses. Delete attempts older than one day during portal sign-in.
+### 6. `tour_packages`
+id PK, destination_id FK→destinations NULL ON DELETE SET NULL, title VARCHAR(200), slug VARCHAR(200) UNIQUE, short_description VARCHAR(500), description TEXT, duration_days INT, duration_nights INT, price DECIMAL(12,2), currency VARCHAR(10) DEFAULT 'BDT', image VARCHAR(255) NULL, itinerary TEXT, inclusions TEXT, exclusions TEXT, is_featured TINYINT(1), is_active TINYINT(1), sort_order INT, timestamps. Index (is_active, is_featured, slug).
 
-### `customer_accounts`
+### 7. `holiday_packages`
+Identical structure to `tour_packages` (separate table per spec, allows independent management).
 
-- customer_id is both the primary key and a foreign key to customers; email is unique; password_hash stores the password hash; created_at and updated_at record account changes.
+### 8. `ship_routes`
+id PK, route_name VARCHAR(200), from_location VARCHAR(150), to_location VARCHAR(150), duration VARCHAR(100) NULL, schedule VARCHAR(255) NULL, price_note VARCHAR(255) NULL, is_active TINYINT(1), sort_order INT, timestamps. Seed: Cox's Bazar → Saint Martin, Cox's Bazar → Sonadia, Chattogram → Saint Martin, etc.
 
-### `customer_account_login_attempts`
+### 9. `bookings` (core)
+| Column | Type | Notes |
+|---|---|---|
+| id | BIGINT UNSIGNED PK AI | |
+| booking_reference | VARCHAR(20) UNIQUE | `SE-YYYY-XXXXXX` |
+| customer_id | FK→customers | |
+| service_type | ENUM('air','ship','bus','tour','holiday') | |
+| service_id | FK→services NULL | |
+| package_type | ENUM('tour','holiday') NULL | |
+| package_id | BIGINT UNSIGNED NULL | (tour_packages.id or holiday_packages.id per package_type; no single FK due to two tables — validated in app) |
+| ship_route_id | FK→ship_routes NULL | |
+| departure_location | VARCHAR(150) NULL | |
+| destination | VARCHAR(150) NULL | |
+| journey_date | DATE NULL | |
+| return_date | DATE NULL | |
+| passenger_count | INT DEFAULT 1 | |
+| passenger_type | ENUM('adult','child','infant','mixed') NULL | |
+| travel_class | VARCHAR(50) NULL | Economy/Business etc. |
+| customer_name | VARCHAR(150) | snapshot |
+| phone | VARCHAR(30) | snapshot |
+| email | VARCHAR(191) NULL | snapshot |
+| address | VARCHAR(255) NULL | |
+| notes | TEXT NULL | customer message |
+| status | ENUM('pending','contacted','processing','confirmed','completed','cancelled','rejected') DEFAULT 'pending' | |
+| created_at / updated_at | TIMESTAMP | |
+Indexes: booking_reference UNIQUE, (status, created_at), (service_type, created_at), customer_id, journey_date.
 
-- id PK; SHA-256 hashes of the account email identifier and IP address; attempted_at; was_successful. Raw credentials and IP addresses are not stored in this table.
+### 10. `booking_notes`
+id PK, booking_id FK→bookings CASCADE, admin_id FK→admins, note TEXT, created_at.
 
-### `services`
+### 11. `booking_status_history`
+id PK, booking_id FK→bookings CASCADE, old_status VARCHAR(20) NULL, new_status VARCHAR(20), changed_by FK→admins NULL, note VARCHAR(255) NULL, created_at.
 
-- `id` PK; `slug` UNIQUE; `name`; `description`; `image_path` nullable; `is_active`; `sort_order`; timestamps.
+### 12. `contact_messages`
+id PK, name VARCHAR(150), phone VARCHAR(30) NULL, email VARCHAR(191) NULL, subject VARCHAR(200) NULL, message TEXT, is_read TINYINT(1), is_replied TINYINT(1), admin_notes TEXT NULL, created_at/updated_at. Index (is_read, created_at).
 
-### `destinations`
+### 13. `testimonials`
+id PK, customer_name VARCHAR(150), location VARCHAR(150) NULL, rating TINYINT, message TEXT, image VARCHAR(255) NULL, is_active TINYINT(1), sort_order INT, timestamps.
 
-- `id` PK; `slug` UNIQUE; `name`; `description`; `image_path` nullable; `is_featured`; `is_active`; timestamps.
+### 14. `website_settings` (key-value)
+id PK, setting_key VARCHAR(100) UNIQUE, setting_value TEXT NULL, setting_type VARCHAR(20) DEFAULT 'string', updated_at. Keys: business_name, tagline, hero_title, hero_description, hero_cta_text, about_title, about_content, mission, vision, phone, whatsapp, email, address, maps_embed, facebook, youtube, instagram, linkedin, opening_hours, footer_text, meta_title, meta_description, logo_text, favicon. See SQL seed.
 
-### `packages`
+### 15. `website_pages`
+id PK, slug VARCHAR(100) UNIQUE, title VARCHAR(200), content LONGTEXT, meta_title VARCHAR(200) NULL, meta_description VARCHAR(500) NULL, updated_at. Seed: `about`.
 
-- One table with `package_type` constrained to `tour` or `holiday`; `id` PK; `destination_id` FK; `slug` UNIQUE; `title`; `summary`; `description`; `duration_days`; `price` DECIMAL nullable; `currency` default BDT; `inclusions`; `exclusions`; `itinerary` JSON; `image_path`; `is_featured`; `is_active`; timestamps.
-- The initial schema uses this shared table because both package types have the same inquiry and content-management fields. Admin views can still separate tour and holiday listings by `package_type`.
+### 16. `media`
+id PK, file_name VARCHAR(255), file_path VARCHAR(255), mime_type VARCHAR(100), file_size INT, uploaded_by FK→admins NULL, created_at.
 
-### `ship_routes`
+### 17. `admin_activity_logs`
+id PK, admin_id FK→admins NULL, action VARCHAR(100), entity_type VARCHAR(50) NULL, entity_id BIGINT NULL, details TEXT NULL, ip_address VARCHAR(45) NULL, created_at. Index (admin_id, created_at).
 
-- `id` PK; `origin`; `destination`; `description` nullable; `is_active`; `sort_order`; timestamps.
+## Design Decisions
+- **Normalized customers:** phone_normalized UNIQUE prevents duplicates; bookings keep snapshot name/phone/email so history survives customer edits.
+- **Package polymorphism:** `package_type` + `package_id` avoids duplicating booking logic; app validates ID exists in correct table. Alternative (two FK columns) rejected as nullable clutter.
+- **Status history + notes separate:** audit trail + internal communication without polluting bookings row.
+- **Settings as key-value:** CMS without schema changes; cached per-request in `Setting` model.
+- **Timestamps everywhere:** `created_at`/`updated_at` for sorting, summaries, and audit.
+- **FK ON DELETE:** SET NULL for optional relations (destination, service), CASCADE for notes/history (booking deletion removes its trail only after admin confirmation).
+- **Transactions:** Booking creation (customer upsert + booking insert + history insert) wrapped in PDO transaction in `BookingService`.
 
-### `bookings`
+## Seed Data
+- 5 services, 8 destinations, 6 tour packages, 6 holiday packages, 4 ship routes, 4 testimonials, ~25 settings, 1 about page. **No default admin** — created via `install.php` with `password_hash()`. Sample package prices/durations are illustrative and editable in admin.
 
-- `id` PK; `booking_reference` UNIQUE; `submission_token_hash` nullable UNIQUE for duplicate POST protection; `customer_id` FK; `service_type` constrained to the five supported categories; `service_id` nullable FK where relevant; `package_id` nullable FK (only where applicable); `ship_route_id` nullable FK; `departure_location` nullable; `destination` nullable; `journey_date` nullable; `return_date` nullable; `passenger_count` nullable; `passenger_type` nullable; `travel_class` nullable; `customer_message` nullable; `status` constrained to the seven supported statuses; timestamps.
-- Use nullable service-specific columns because not all booking categories share every field; validate required fields by service type.
-- Index `(status, created_at)`, `(service_type, created_at)`, `journey_date`, and `customer_id`.
+## Indexes Summary
+All FKs indexed; UNIQUE on slugs, booking_reference, phone_normalized, setting_key, admin email; composite indexes on bookings(status, created_at) and login_attempts(email, ip, time) for dashboard + rate limiting.
 
-### `booking_notes`
-
-- `id` PK; `booking_id` FK; `admin_id` FK; `note`; `created_at`.
-- Internal notes are separate from customer-submitted messages.
-
-### `booking_status_history`
-
-- `id` PK; `booking_id` FK; `admin_id` nullable FK for system-created events; `old_status`; `new_status`; `note` nullable; `created_at`.
-- Insert status change and update booking in one transaction.
-- New inquiries start with a system-created `pending` event in the same transaction as the booking. Existing databases can backfill one baseline event per inquiry with `database/migrations/2026_11_26_backfill_booking_status_history.sql`.
-
-### `contact_messages`
-
-- `id` PK; `name`; `phone` nullable; `email` nullable; `subject` nullable; `message`; `status` (unread/read/replied); `admin_note` nullable; timestamps.
-- Index `(status, created_at)`.
-
-### `testimonials`
-
-- `id` PK; `customer_display_name`; `quote`; `rating` nullable and only if verified; `is_approved`; `sort_order`; timestamps.
-- Only genuine approved testimonials may appear publicly.
-
-### `website_settings`
-
-- `id` PK; `setting_key` UNIQUE; `setting_value` text; `updated_by` nullable FK to admins; `updated_at`.
-- Store non-secret display settings only; keep DB credentials and secrets outside public web root or in protected host configuration.
-
-### `website_pages`
-
-- `id` PK; `slug` UNIQUE; `title`; `body`; `meta_title`; `meta_description`; `is_published`; timestamps.
-
-### `media`
-
-- `id` PK; `storage_path`; `original_name` sanitized; `mime_type`; `file_size`; `alt_text`; `uploaded_by` FK; `created_at`.
-- Store generated filenames; block script execution in upload directories.
-
-### `admin_activity_logs`
-
-- `id` PK; `admin_id` nullable FK; `action`; `entity_type`; `entity_id` nullable; `created_at`.
-- Avoid logging passwords, session identifiers, or unnecessary customer data.
-
-## 3. Relationships
-
-- One customer has many bookings.
-- A customer can view inquiry status after proving access with one booking reference and the phone number stored on their customer record.
-- One destination has many tour/holiday packages.
-- One booking has many notes and status-history entries.
-- One admin creates many booking notes, status changes, uploaded media, and activity records.
-- Services/routes/packages are optional booking references depending on service type; retain the submitted category and relevant destination/date details on the booking even if catalog content later changes.
-
-## 4. Integrity and Operations
-
-- Use foreign keys with deliberate delete behavior. Prefer restricting deletion of records referenced by bookings; deactivate catalog records instead.
-- Generate unique booking references with a collision-checked random/token strategy and a database unique constraint.
-- Use transactions for booking creation with customer upsert and for booking status/history changes.
-- Create indexes from actual search/filter routes; avoid indexing every field.
-- Provide an installation SQL file and a safe admin setup procedure. Do not expose SQL dumps or configuration through public URLs.
-
+---
+*Phase 01 Deliverable — DATABASE_DESIGN.md*

@@ -1,42 +1,64 @@
 <?php
-declare(strict_types=1);
-
-define('BASE_PATH', __DIR__);
-
-require BASE_PATH . '/config/env.php';
-load_environment(BASE_PATH . '/.env');
-
-spl_autoload_register(static function (string $class): void {
-    $prefix = 'App\\';
-    if (!str_starts_with($class, $prefix)) {
-        return;
+// SAKIB ENTERPRISE — Bootstrap
+// Load .env (simple parser, no external dependency)
+$envFile = __DIR__ . '/.env';
+if (is_file($envFile)) {
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) continue;
+        if (!str_contains($line, '=')) continue;
+        [$k, $v] = explode('=', $line, 2);
+        $k = trim($k);
+        $v = trim($v);
+        if (str_starts_with($v, '"') && str_ends_with($v, '"')) {
+            $v = substr($v, 1, -1);
+        } elseif (str_starts_with($v, "'") && str_ends_with($v, "'")) {
+            $v = substr($v, 1, -1);
+        }
+        if (getenv($k) === false) {
+            putenv("$k=$v");
+            $_ENV[$k] = $v;
+        }
     }
+}
 
-    $relative = substr($class, strlen($prefix));
-    $file = BASE_PATH . '/app/' . str_replace('\\', '/', $relative) . '.php';
-    if (is_file($file)) {
-        require $file;
+date_default_timezone_set('Asia/Dhaka');
+error_reporting(E_ALL);
+ini_set('display_errors', getenv('APP_DEBUG') === 'true' ? '1' : '0');
+ini_set('log_errors', '1');
+
+// Secure session defaults
+if (session_status() === PHP_SESSION_NONE) {
+    $secure = (getenv('SESSION_SECURE') === 'true') || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    session_set_cookie_params([
+        'lifetime' => (int)(getenv('SESSION_LIFETIME') ?: 1800),
+        'path' => '/',
+        'secure' => $secure,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+}
+
+// Autoloader (PSR-4-ish for App\)
+spl_autoload_register(function ($class) {
+    if (str_starts_with($class, 'App\\')) {
+        $path = __DIR__ . '/app/' . str_replace('\\', '/', substr($class, 4)) . '.php';
+        if (is_file($path)) {
+            require $path;
+        }
     }
 });
 
-require BASE_PATH . '/app/Helpers/functions.php';
-require BASE_PATH . '/config/security.php';
+require __DIR__ . '/app/Core/helpers.php';
 
-$appConfig = require BASE_PATH . '/config/app.php';
-date_default_timezone_set($appConfig['timezone']);
-
-$errorLog = BASE_PATH . '/storage/logs/app.log';
-set_error_handler(static function (int $severity, string $message, string $file, int $line) use ($appConfig, $errorLog): bool {
-    if (!(error_reporting() & $severity)) {
-        return false;
+// Global error handler — log, don't expose details in production
+set_exception_handler(function ($e) {
+    \App\Core\Logger::error('Uncaught: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    if (getenv('APP_DEBUG') === 'true') {
+        echo '<pre>' . htmlspecialchars($e->getMessage()) . '</pre>';
+    } else {
+        http_response_code(500);
+        echo '<!DOCTYPE html><html><head><title>Error</title></head><body style="font-family:sans-serif;text-align:center;padding:60px 20px"><h1>Something went wrong</h1><p>Please try again later or contact us.</p><p><a href="/">Go Home</a></p></body></html>';
     }
-    \App\Helpers\Logger::error(sprintf('%s in %s:%d', $message, $file, $line), $errorLog);
-    return true;
-});
-
-set_exception_handler(static function (Throwable $exception) use ($appConfig, $errorLog): void {
-    \App\Helpers\Logger::error($exception::class . ': ' . $exception->getMessage(), $errorLog);
-    http_response_code(500);
-    header('Content-Type: text/plain; charset=utf-8');
-    echo $appConfig['debug'] ? 'Application error. See protected local logs.' : 'Something went wrong. Please try again later.';
 });

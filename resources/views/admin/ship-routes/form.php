@@ -1,0 +1,9 @@
+<div class="flex items-center justify-between mb-6"><h1 class="font-display font-extrabold text-2xl text-brand-navy"><?= $route ? 'Edit' : 'Add' ?> Ship Route</h1><a href="<?= url('/admin/ship-routes') ?>" class="text-sm text-gray-500 hover:text-brand-navy"><i class="fa-solid fa-arrow-left mr-1"></i> Back</a></div>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl"><form method="POST" action="<?= $route ? url('/admin/ship-routes/'.$route['id']) : url('/admin/ship-routes') ?>" class="space-y-4"><?= csrf_field() ?>
+<?php partial('input', ['name'=>'route_name','label'=>'Route Name (e.g. MV Green Line)','required'=>true,'value'=>$route['route_name'] ?? '']); ?>
+<div class="grid md:grid-cols-2 gap-4"><?php partial('input', ['name'=>'from_location','label'=>'From','required'=>true,'value'=>$route['from_location'] ?? '']); partial('input', ['name'=>'to_location','label'=>'To','required'=>true,'value'=>$route['to_location'] ?? '']); ?></div>
+<div class="grid md:grid-cols-2 gap-4"><?php partial('input', ['name'=>'duration','label'=>'Duration','value'=>$route['duration'] ?? '']); partial('input', ['name'=>'schedule','label'=>'Schedule','value'=>$route['schedule'] ?? '']); ?></div>
+<?php partial('input', ['name'=>'price_note','label'=>'Price Note','value'=>$route['price_note'] ?? '']); ?>
+<div class="grid md:grid-cols-2 gap-4"><?php partial('input', ['name'=>'sort_order','label'=>'Sort Order','type'=>'number','value'=>$route['sort_order'] ?? 0]); ?>
+<div class="flex items-center gap-2 mt-6"><input type="checkbox" name="is_active" id="a" <?= !$route || !empty($route['is_active'])?'checked':'' ?> class="w-4 h-4"><label for="a" class="text-sm font-semibold">Active</label></div></div>
+<button class="btn-primary px-6 py-2.5 rounded-lg font-semibold text-sm"><i class="fa-solid fa-save mr-1"></i> Save</button></form></div>

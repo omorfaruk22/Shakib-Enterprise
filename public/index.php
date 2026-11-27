@@ -1,35 +1,18 @@
 <?php
-declare(strict_types=1);
+// SAKIB ENTERPRISE — Front Controller (public/index.php)
+require __DIR__ . '/../bootstrap.php';
 
-if (PHP_SAPI === 'cli-server') {
-    $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-    $requestedFile = is_string($requestPath)
-        ? realpath(__DIR__ . rawurldecode($requestPath))
-        : false;
-    $publicRoot = realpath(__DIR__);
-    $staticExtensions = ['avif', 'css', 'gif', 'ico', 'jpeg', 'jpg', 'js', 'png', 'svg', 'webp', 'woff', 'woff2'];
-
-    if (
-        $requestedFile !== false
-        && $publicRoot !== false
-        && is_file($requestedFile)
-        && str_starts_with(strtolower($requestedFile), strtolower($publicRoot . DIRECTORY_SEPARATOR))
-        && in_array(strtolower(pathinfo($requestedFile, PATHINFO_EXTENSION)), $staticExtensions, true)
-    ) {
-        return false;
-    }
-}
-
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header('Permissions-Policy: camera=(), geolocation=(), microphone=()');
-
-require dirname(__DIR__) . '/bootstrap.php';
-
-use App\Helpers\Router;
+use App\Core\Router;
 
 $router = new Router();
-require BASE_PATH . '/routes/web.php';
+require __DIR__ . '/../routes/web.php';
+require __DIR__ . '/../routes/admin.php';
 
-$router->dispatch($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['REQUEST_URI'] ?? '/');
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+// Support clean URLs: ?route=/tours/... or REQUEST_URI path
+$uri = $_GET['route'] ?? parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+// Strip index.php prefix if present
+$uri = preg_replace('#^/index\.php#', '', $uri);
+if ($uri === '' || $uri === null) $uri = '/';
+
+$router->dispatch($method, $uri);

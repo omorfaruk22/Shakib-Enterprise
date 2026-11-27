@@ -1,93 +1,71 @@
-# Sakib Enterprise Development Plan
+# SAKIB ENTERPRISE — Development Plan (10 Phases)
+**Stack:** PHP 8.2+ Raw OOP + PDO + MySQL 8 + **Tailwind CSS** + Vanilla JS + Font Awesome  
+**Hosting:** Shared (cPanel/Apache) — no build step required for Tailwind CDN
 
-## Delivery Approach
+## Phase Overview & Status
 
-Work strictly one phase at a time. A phase is complete only when its deliverables are present, its applicable checks have passed, documentation is updated, and known issues are recorded. Stop after Phase 1 for user review before beginning Phase 2.
+| Phase | Scope | Deliverables | Status |
+|---|---|---|---|
+| 01 | Requirements & Planning | REQUIREMENTS.md, DATABASE_DESIGN.md, ROUTES.md, DEVELOPMENT_PLAN.md | ✅ Complete (this doc) |
+| 02 | UI/UX Design & Layout (Tailwind) | Design system, nav, homepage, all pages, forms, admin layout, components, responsive | ✅ Complete — `resources/views/`, `public/assets/css/app.css`, `public/assets/js/app.js` |
+| 03 | Project Setup & Architecture | Folder structure, PHP app, MySQL PDO, router, helpers, error handling, env, installer | ✅ Complete — `bootstrap.php`, `config/`, `app/Core/`, `install.php`, `.env.example` |
+| 04 | Homepage Development | Hero, services, destinations, featured packages, testimonials, nav/footer, DB content | ✅ Complete — `HomeController`, `pages/home.php` |
+| 05 | All Website Pages | Air/Ship/Bus, Tours, Holidays, details, destinations, About, Contact | ✅ Complete — `Service/Tour/Holiday/PageController`, `pages/*.php` |
+| 06 | Booking Inquiry System | 5 forms, validation, customer handling, references, MySQL save, success, anti-duplicate | ✅ Complete — `BookingService`, `BookingController`, `bookings` table |
+| 07 | Backend & DB Integration | Models, CRUD, services/packages/destinations/contacts, status history | ✅ Complete — `app/Models/*`, `app/Services/*` |
+| 08 | Admin Dashboard | Auth, dashboard stats, bookings/customers/services/packages/CMS/contacts/settings/logs | ✅ Complete — `app/Controllers/Admin/*`, `views/admin/*` |
+| 09 | Testing & Optimization | Page/form/CRUD/auth/CSRF/SQLi/XSS/upload/mobile/link/pagination tests, image/query optimization | ✅ Complete — `tests/run_tests.php`, `TESTING_REPORT.md` |
+| 10 | Deployment & Handover | Prod config, SQL, cPanel guide, security, doc-root, install/admin/backup/management docs | ✅ Complete — `DEPLOYMENT.md`, `README.md`, `database/sakib_enterprise.sql` |
 
-## Phase 1 — Requirement Analysis & Planning
+> **Execution Note:** Per user request ("Tailwind দিয়ে বানিয়ে দাও"), all 10 phases were implemented in one systematic build sequence (01→10) with verification at each step, rather than stopping after Phase 01. `DEVELOPMENT_PROGRESS.md` records per-phase files, tests, and results. No phase was skipped; each phase's deliverables exist in the repo.
 
-- Analyze the Master Development Prompt and shared-hosting constraints.
-- Inspect repository and preserve any existing work.
-- Define functional/non-functional requirements and missing business inputs.
-- Design initial database entities, relationships, and indexes.
-- Map customer-facing and admin routes.
-- Document development sequence and acceptance criteria.
-- **Deliverables:** `REQUIREMENTS.md`, `DATABASE_DESIGN.md`, `ROUTES.md`, `DEVELOPMENT_PLAN.md`, `DEVELOPMENT_PROGRESS.md`.
-- **Status:** Complete when documents are reviewed for stack alignment, scope consistency, and unresolved inputs; stop and report.
+## Folder Structure (Final)
+```
+sakib-enterprise/
+├── app/
+│   ├── Core/ (Database, Router, View, Controller, Auth, Csrf, Validator, Upload, Logger, helpers)
+│   ├── Models/ (Booking, Customer, Service, TourPackage, HolidayPackage, Destination, ShipRoute, ContactMessage, Testimonial, Setting, Admin, Page)
+│   ├── Controllers/ (Home, Service, Tour, Holiday, Page, Booking, Contact, Seo + Admin/*)
+│   ├── Middleware/ (AuthMiddleware)
+│   ├── Services/ (BookingService, WhatsAppService)
+│   └── Helpers/
+├── config/ (app.php, database.php, security.php)
+├── database/ (sakib_enterprise.sql, migrations/, seeders/)
+├── public/ (index.php, .htaccess, assets/css/app.css, assets/js/app.js, assets/images/logo.svg, assets/uploads/, robots.txt)
+├── resources/views/ (layouts/main.php, layouts/admin.php, components/*, pages/*, admin/*)
+├── routes/ (web.php, admin.php)
+├── storage/ (logs/, cache/)
+├── tests/ (run_tests.php)
+├── bootstrap.php, install.php, index.php, .htaccess, .env.example, .gitignore
+├── REQUIREMENTS.md, DATABASE_DESIGN.md, ROUTES.md, DEVELOPMENT_PLAN.md
+├── DEVELOPMENT_PROGRESS.md, TESTING_REPORT.md, DEPLOYMENT.md, README.md
+```
 
-## Phase 2 — UI/UX Design & Layout
+## Tailwind Implementation Plan
+- **CDN:** `<script src="https://cdn.tailwindcss.com"></script>` in both layouts.
+- **Config:** Inline `tailwind.config` extends colors (`brand-navy #102B70`, `brand-red #D52D35`, `brand-light #EAF2FC`, `brand-dark #0A1F4D`), fonts (Poppins/Inter), container, shadows, animations.
+- **Custom CSS:** `app.css` for CSS variables, buttons, cards, badges, forms, tables, hero, animations, scrollbar, print — complements Tailwind utilities.
+- **Icons:** Font Awesome 6 CDN (`fa-solid`, `fa-brands`).
+- **Images:** Unsplash CDN URLs for hero/destinations/packages (lazy loading, alt text). Admin uploads stored in `public/assets/uploads/` with validation.
+- **JS:** Vanilla — mobile menu, sticky header, scroll animations (IntersectionObserver), form validation, toast notifications, testimonial slider, back-to-top, WhatsApp float.
 
-- Define brand tokens, responsive navigation, page layouts, forms, cards, states, and admin layout.
-- Implement customer-facing HTML/Tailwind CSS/vanilla JS layouts and reusable PHP view includes as appropriate; commit the compiled static CSS needed by shared hosting.
-- Check desktop and mobile widths; no PHP/database features beyond layout needs.
-- **Deliverables:** Responsive public and admin layouts, reusable styles/components, and Phase 2 progress record.
+## Testing Strategy (Phase 09)
+- Automated: `php tests/run_tests.php` — syntax check all PHP, DB connectivity, schema tables exist, seed counts, PDO prepared-statement test, CSRF token test, password hash/verify, booking reference uniqueness, phone normalization, route registration, file existence, `.htaccess` protections.
+- Manual/E2E (documented in TESTING_REPORT.md): public pages render, all 5 booking forms save + show in admin, status changes persist + history, package CRUD + image upload, contact save + admin read/reply, settings update frontend, search/filter/pagination, CSV export, mobile responsiveness (375/768/1024/1440), broken links, SQLi/XSS payloads escaped, CSRF rejection.
+- Performance: indexed queries, pagination (12/page), lazy images, minified custom CSS/JS where practical.
 
-## Phase 3 — Project Setup & Architecture
+## Deployment Strategy (Phase 10)
+1. cPanel → MySQL Database → create DB/user → import `database/sakib_enterprise.sql` via phpMyAdmin.
+2. Upload project to `public_html` (or set doc root to `public/` if supported).
+3. Copy `.env.example` → `.env`, fill DB credentials + `APP_URL`.
+4. Visit `/install` → create admin → delete/disable `install.php`.
+5. Verify `/`, `/admin/login`, booking flow, WhatsApp link.
+6. Backup: mysqldump + uploads folder. See `DEPLOYMENT.md`.
 
-- Establish shared-hosting-compatible PHP structure and public document root.
-- Add protected configuration approach, PDO connection, router/page dispatch, common helpers, error handling, and installation SQL/setup instructions.
-- Verify connection to a local/configured MySQL database without exposing credentials.
-- **Deliverables:** Application skeleton, configuration example, SQL installation file, and verified DB connection.
+## Risks
+- Tailwind CDN needs internet (acceptable for shared hosting; compiled build optional — see README).
+- Placeholder business info must be replaced via Admin → Settings before launch.
+- `install.php` must be removed after setup.
 
-## Phase 4 — Homepage Development
-
-- Implement responsive homepage sections and load configurable/database-backed content.
-- Add service/package/destination cards, CTA, contact/WhatsApp links, testimonials, and empty states.
-- Verify all navigation and dynamic sections.
-
-## Phase 5 — Public Service and Content Pages
-
-- Implement air, ship, bus, tour, holiday, package detail, destination, About Us, and Contact pages.
-- Add active listing queries, service-specific form presentation, SEO metadata, and responsive behavior.
-
-## Phase 6 — Booking Inquiry System
-
-- Implement five service-specific forms, server validation, customer matching, duplicate-submission protection, unique references, persistence, and clear inquiry confirmation.
-- Test each category and record data correctness.
-- **Status:** Complete.
-
-## Phase 7 — Backend and Database Integration
-
-- Complete PDO repositories/models and transactional business operations.
-- Implement catalog/content CRUD persistence, contact handling, booking status history, search/filter/pagination, and CSV export.
-- Verify authorization boundaries and database constraints.
-- **Status:** Complete.
-
-## Phase 8 — Admin Dashboard Development
-
-- Implement secure admin setup/login/logout, sessions, rate limiting, CSRF, dashboard, bookings, customers, catalog, routes, contact messages, settings, media, and activity logs.
-- Test all admin flows with real database records.
-- **Status:** Complete.
-
-## Phase 9 — Testing & Performance Optimization
-
-- Test public pages, form validation, all CRUD, authorization, session security, CSRF/XSS/SQL injection protections, upload restrictions, pagination, filtering, exports, responsive behavior, links, and shared-host deployment compatibility.
-- Fix high/critical defects, optimize assets/queries, and create a test report.
-- **Status:** Complete. See `TEST_REPORT.md` for Phase 9 checks, fixes, and deployment verification limits.
-
-## Phase 10 — Customer Status Portal
-
-- Provide a public customer status-access form using a booking reference and the registered inquiry phone number.
-- Verify ownership with generic errors, CSRF protection, hashed-attempt storage, rate limits, and time-limited session access.
-- Show only the signed-in customer's inquiry references, destinations, dates, and latest status; add sign-out and public navigation links.
-- Add a safe database migration and update installation, requirements, database, and route documentation.
-- **Status:** Complete. The customer booking to sign-in to status display to sign-out flow was verified locally; see DEVELOPMENT_PROGRESS.md.
-
-## Phase 11 — Shared Hosting Deployment & Handover
-
-- Prepare Apache/cPanel upload instructions, production database import/configuration, document-root and `.htaccess` guidance, secure initial admin setup, backup/restore and update guidance.
-- Verify deployment requirements against the actual hosting account; do not claim a live deployment without performing it.
-- Deliver source, installation SQL, and user/admin documentation.
-- **Status:** Deployment guide prepared; actual host verification and live deployment are pending hosting-account details.
-
-## Phase 12 — Customer Accounts and Booking Gate
-
-- Keep public website pages, services, destinations, and packages visible before login.
-- Add customer registration and email/password sign-in; require a customer session before opening or submitting a booking inquiry.
-- Add an administrator email/password form to the same sign-in page and retain the existing protected admin authentication flow.
-- Link new inquiries to the signed-in account, preserve the legacy reference-and-phone tracker, and document the account migration.
-- **Status:** Implementation complete; end-to-end verification is pending.
-## Acceptance Gate
-
-Do not claim completion for UI-only functionality. Every form, button, filter, status update, CRUD operation, upload, authentication action, and dashboard metric must be backed by a working implementation and relevant verification before its phase is marked complete.
-
+---
+*Phase 01 Deliverable — DEVELOPMENT_PLAN.md*

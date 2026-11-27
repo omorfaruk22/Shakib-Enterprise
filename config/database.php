@@ -1,12 +1,10 @@
 <?php
-declare(strict_types=1);
-
+// SAKIB ENTERPRISE — Database Configuration (PDO)
 return [
-    'driver' => 'mysql',
-    'host' => env_value('DB_HOST', '127.0.0.1'),
-    'port' => env_value('DB_PORT', '3306'),
-    'database' => env_value('DB_DATABASE', 'sakib_enterprise'),
-    'username' => env_value('DB_USERNAME', ''),
-    'password' => env_value('DB_PASSWORD', ''),
-    'charset' => env_value('DB_CHARSET', 'utf8mb4'),
+    'host' => getenv('DB_HOST') ?: 'localhost',
+    'port' => getenv('DB_PORT') ?: '3306',
+    'database' => getenv('DB_DATABASE') ?: 'sakib_enterprise',
+    'username' => getenv('DB_USERNAME') ?: 'root',
+    'password' => getenv('DB_PASSWORD') ?: '',
+    'charset' => 'utf8mb4',
 ];

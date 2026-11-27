@@ -1,16 +1,23 @@
-<?php
-declare(strict_types=1);
-
-$pageHeading = 'Inquiry received';
-$pageEyebrow = 'Thank you';
-$pageLead = 'Your travel inquiry has been saved. The business team will review your details and contact you.';
-require BASE_PATH . '/resources/views/partials/page-heading.php';
-?>
-<section class="px-4 py-12 sm:py-16"><div class="mx-auto max-w-2xl rounded-3xl border border-emerald-200 bg-white p-6 text-center shadow-sm sm:p-10">
-  <span class="mx-auto grid size-16 place-items-center rounded-full bg-emerald-50 text-3xl font-black text-emerald-700" aria-hidden="true">✓</span>
-  <h2 class="mt-5 text-2xl font-extrabold text-brand-navy">Your request is with our team</h2>
-  <p class="mt-2 text-slate-600">We have received your <?= e_value(strtolower((string) $confirmation['service_name'])) ?>. Keep this reference if you contact us about it.</p>
-  <div class="mt-6 rounded-2xl bg-slate-50 p-5"><p class="text-xs font-bold uppercase tracking-wider text-slate-500">Inquiry reference</p><p class="mt-1 select-all font-mono text-xl font-extrabold tracking-wider text-brand-navy" aria-label="Inquiry reference <?= e_value($confirmation['reference']) ?>"><?= e_value($confirmation['reference']) ?></p><p class="mt-2 text-xs text-slate-500">Received <?= e_value(date('d M Y, g:i A', strtotime((string) $confirmation['created_at']))) ?></p></div>
-  <p class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-left text-sm text-amber-900">This is an inquiry only—not a ticket, payment or confirmed booking. The team will confirm availability and next steps directly.</p>
-  <div class="mt-7 flex flex-wrap justify-center gap-3"><a class="rounded-full bg-brand-red px-5 py-3 font-bold text-white" href="<?= e(app_url('/customer/dashboard')) ?>">View my inquiries</a><a class="rounded-full bg-brand-navy px-5 py-3 font-bold text-white" href="<?= e(app_url('/')) ?>">Return home</a><a class="rounded-full border border-slate-300 px-5 py-3 font-bold text-brand-navy" href="<?= e(app_url('/services')) ?>">Browse services</a></div>
-</div></section>
+<?php $_activeNav = ''; ?>
+<section class="py-20 min-h-[60vh] flex items-center">
+  <div class="max-w-xl mx-auto px-4 text-center">
+    <div class="w-20 h-20 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-3xl mx-auto mb-5"><i class="fa-solid fa-check"></i></div>
+    <h1 class="font-display font-extrabold text-3xl md:text-4xl text-brand-navy mb-3">Thank You! Your Inquiry Has Been Received</h1>
+    <?php if (!empty($booking['booking_reference'])): ?>
+      <div class="bg-brand-light rounded-xl p-4 mb-5 inline-block">
+        <div class="text-xs text-gray-500 mb-1">Your Booking Reference</div>
+        <div class="font-display font-extrabold text-2xl text-brand-navy tracking-wider"><?= htmlspecialchars($booking['booking_reference']) ?></div>
+      </div>
+    <?php endif; ?>
+    <p class="text-gray-600 leading-relaxed mb-6">We have received your booking inquiry and one of our agents will contact you shortly at the phone number you provided to confirm details and finalize arrangements.</p>
+    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl p-4 text-sm text-left mb-6">
+      <i class="fa-solid fa-circle-info mr-2"></i> <strong>Note:</strong> This is an inquiry submission only. No ticket or booking is confirmed until we contact you and verify availability and payment.
+    </div>
+    <div class="flex flex-wrap gap-3 justify-center">
+      <a href="<?= url('/') ?>" class="btn-primary px-6 py-3 rounded-lg font-semibold"><i class="fa-solid fa-house mr-2"></i> Back to Home</a>
+      <?php if (setting('whatsapp')): ?>
+        <a href="<?= whatsapp_url('Hello! I just sent a booking inquiry. Reference: ' . ($booking['booking_reference'] ?? '')) ?>" target="_blank" rel="noopener" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 inline-flex items-center gap-2"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
+      <?php endif; ?>
+    </div>
+  </div>
+</section>

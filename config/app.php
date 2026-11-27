@@ -1,11 +1,13 @@
 <?php
-declare(strict_types=1);
-
+// SAKIB ENTERPRISE — App Configuration
 return [
-    'name' => env_value('APP_NAME', 'SAKIB ENTERPRISE'),
-    'environment' => env_value('APP_ENV', 'local'),
-    'debug' => filter_var(env_value('APP_DEBUG', 'false'), FILTER_VALIDATE_BOOL),
-    'url' => rtrim((string) env_value('APP_URL', 'http://127.0.0.1:8000'), '/'),
-    'timezone' => env_value('APP_TIMEZONE', 'Asia/Dhaka'),
-    'admin_setup_token' => env_value('ADMIN_SETUP_TOKEN', ''),
+    'name' => getenv('APP_NAME') ?: 'SAKIB ENTERPRISE',
+    'env' => getenv('APP_ENV') ?: 'production',
+    'debug' => (getenv('APP_DEBUG') === 'true'),
+    'url' => rtrim(getenv('APP_URL') ?: 'http://localhost', '/'),
+    'timezone' => 'Asia/Dhaka',
+    'session_lifetime' => (int)(getenv('SESSION_LIFETIME') ?: 1800),
+    'session_secure' => (getenv('SESSION_SECURE') === 'true'),
+    'currency' => 'BDT',
+    'currency_symbol' => '৳',
 ];

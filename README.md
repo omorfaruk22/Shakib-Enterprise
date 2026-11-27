@@ -1,67 +1,75 @@
-# SAKIB ENTERPRISE
+# SAKIB ENTERPRISE — Travel Agency Website
 
-Raw PHP travel-agency website for ordinary PHP/MySQL shared hosting.
+A complete, production-ready travel agency & tourism website for **SAKIB ENTERPRISE**, Cox's Bazar Sadar, Bangladesh — "Your Trusted Travel Partner".
 
-## Requirements
+## 🧰 Tech Stack
+- **Backend:** Raw PHP 8.2+ (OOP, PDO, Sessions) — no Laravel/framework required
+- **Database:** MySQL 8 / MariaDB (InnoDB, utf8mb4, 17 tables)
+- **Frontend:** HTML5, Tailwind CSS (Play CDN), Font Awesome 6, Vanilla JavaScript
+- **Deployment:** Shared hosting (cPanel/Apache) ready — no Node/build step, no VPS required
 
-- PHP 8.2 or newer with PDO and `pdo_mysql` enabled.
-- PHP `fileinfo` enabled for image upload type verification.
-- MySQL 8+ / InnoDB / `utf8mb4`.
-- Apache with `.htaccess` and `mod_rewrite` enabled for clean routes. This release does not provide a query-string router fallback; ask the host to enable the required rewrite rules.
-- Tailwind CSS is compiled locally to `public/assets/css/site.css`; hosting needs no Node.js or build process.
-- Public layout styling is written with Tailwind utility classes directly in the PHP templates' HTML `class` attributes. See `TAILWIND.md` to rebuild the static stylesheet.
+## ✨ Features
+- 8 public pages: Home, Air/Ship/Bus Ticket, Tours, Holidays, About, Contact
+- Tour & Holiday package detail pages with booking inquiry form
+- 5-category booking inquiry system with unique references (SE-YYYY-XXXXXX)
+- Booking status workflow: Pending → Contacted → Processing → Confirmed → Completed / Cancelled / Rejected
+- Customer login/register with booking history dashboard
+- Admin login with 3 roles: Super Admin, Admin, Manager (with permission levels)
+- Full CMS from admin panel: services, packages, destinations, ship routes, testimonials, website settings (all text/sections editable from admin, no code changes needed)
+- WhatsApp floating chat + click-to-chat links
+- CSRF protection, XSS escaping, PDO prepared statements, login rate limiting, secure upload validation
+- Fully responsive (mobile/tablet/desktop)
+- SEO friendly: sitemap.xml, canonical URLs, meta tags, OG tags
+- XML database installation script + one-click `install.php`
 
-## Local setup
+## 🚀 Quick Start (Local Development)
+1. Create a MySQL database (e.g. `sakib_enterprise`, utf8mb4)
+2. Copy `.env.example` to `.env` and fill DB credentials
+3. Import `database/sakib_enterprise.sql` (or let `install.php` create tables)
+4. Run PHP built-in server:
+   ```
+   php -S localhost:8080 -t public/ public/router.php
+   ```
+5. Visit `http://localhost:8080/install.php` to create your first Super Admin
+6. Delete `install.php` after setup
+7. Visit `http://localhost:8080/admin/login` to manage content
 
-The local MySQL 8.4.9 instance for this computer binds only to `127.0.0.1`. Its data directory is under the Windows user profile, and its app credentials are in the ignored `.env` file. It does not run as a Windows service, so start it after a Windows restart:
-
-```powershell
-Set-Location -LiteralPath "D:\Omor Faruk\Project\Shakib EnterPrice"
-powershell -ExecutionPolicy Bypass -File scripts\start-local-mysql.ps1
+## 📁 Project Structure
+```
+sakib-enterprise/
+├── app/                  # Core, Models, Controllers, Services, Middleware
+├── config/               # app, database, security configs
+├── database/             # SQL installation file
+├── public/               # Document root (index.php, assets, uploads, .htaccess)
+├── resources/views/      # All templates: layouts, components, pages, admin
+├── routes/               # web.php (public) + admin.php (admin)
+├── storage/              # logs, cache
+├── bootstrap.php         # App bootstrap (env loader, autoloader, session, error handler)
+├── install.php           # One-time installer
+└── .env.example          # Environment template
 ```
 
-The project schema has already been imported locally. A fresh database install should create an empty database named `sakib_enterprise` first, then import `database/sakib_enterprise.sql`; this SQL file creates tables only and does not insert a default admin. When upgrading an older database, apply `database/migrations/2026_11_26_add_booking_submission_token.sql` if it predates Phase 6, then apply `database/migrations/2026_11_26_backfill_booking_status_history.sql` once to record a baseline for existing inquiries. Apply `database/migrations/2026_11_27_add_customer_portal_login_attempts.sql` for legacy inquiry tracking and `database/migrations/2026_11_27_add_customer_accounts.sql` for email/password customer accounts. New inquiries write their initial `pending` history entry automatically.
+## 🛠️ cPanel / Shared Hosting Deployment
+1. Upload project files to your hosting (public_html or subdomain folder)
+2. Create a MySQL database and user via cPanel
+3. Edit `.env` with production DB credentials
+4. Set `APP_DEBUG=false` and `SESSION_SECURE=true` in `.env`
+5. Visit `https://your-domain.com/install.php` to create tables and admin account
+6. **Delete `install.php`** immediately after setup
+7. Ensure `storage/` and `public/assets/uploads/` are writable (755 or 777)
 
-To stop the local MySQL process cleanly:
+## 🔐 Admin Roles
+| Role | Permissions |
+|------|-------------|
+| **Super Admin** | Full access including admin user management |
+| **Admin** | Full content/booking/customer/settings access |
+| **Manager** | Bookings/Customers/Messages only — cannot change settings or manage admins |
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\stop-local-mysql.ps1
-```
+## 👥 Customer Accounts
+Customers can register with phone/email, view their booking history, and track inquiry status — no email verification required (optional to add later).
 
-From PowerShell, run the PHP development server from the project root:
+## 📱 WhatsApp Integration
+Configure your WhatsApp number from Admin → Settings (digits only, with country code, e.g. `8801700000000`). Floating button appears automatically.
 
-```powershell
-Set-Location -LiteralPath "D:\Omor Faruk\Project\Shakib EnterPrice"
-php -S 127.0.0.1:8000 -t public public/index.php
-```
-
-Open `http://127.0.0.1:8000/`. Check `/health` for application liveness. In local mode, `/health/database` checks the MySQL connection.
-
-If the homepage returns 404, confirm PowerShell is in the project folder before starting the server, and include `-t public public/index.php` exactly as shown above. A made-up route such as `/missing-path` correctly returns 404.
-
-To check the PHP runtime and required extensions:
-
-```powershell
-php scripts/check-environment.php
-```
-
-To check the configured MySQL connection from the command line:
-
-```powershell
-php scripts/check-database.php
-```
-
-## First administrator account
-
-- With the local PHP server and MySQL running, open `http://127.0.0.1:8000/admin/setup`.
-- The ignored local `.env` file contains the one-time `ADMIN_SETUP_TOKEN`. Use it to create the real administrator account with a password of at least 12 characters.
-- Setup closes automatically when an administrator exists. There is no public administrator registration form. Customers can register or sign in at `/login`. Administrators sign in at `/admin/login`.
-- Remove `ADMIN_SETUP_TOKEN` from `.env` after creating the account. Do not commit `.env` or share the administrator password.
-
-## cPanel deployment
-
-Follow [DEPLOYMENT.md](DEPLOYMENT.md) for the private/public directory layout, database import and migrations, production `.env` setup, secure first-admin creation, go-live checks, backups, restores, and updates. Do not deploy until the host can serve the project's `public/` directory as the domain document root.
-
-The public pages, booking/contact inquiries, and Phase 7 database integration are implemented. Phase 8 adds first-admin setup, login, the responsive admin dashboard, booking/customer/contact management, catalog/content/settings CRUD, safe image uploads, and activity history. Public and admin views use Tailwind utility classes in HTML; the committed `site.css` is the compiled stylesheet required by shared hosting. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.
-
-Public pages, services, destinations, and packages are visible without signing in. Customers must create an account or sign in at /login before opening or submitting a booking inquiry. Customer accounts use an email address and password; booking forms use the account phone and link every inquiry to that customer. The same page provides an administrator sign-in form that accepts the admin Gmail address and its existing admin password. Existing customers can still use the legacy Track inquiry page with a booking reference and phone. Email verification and Google OAuth are not configured.
+---
+Developed for SAKIB ENTERPRISE, Cox's Bazar Sadar, Bangladesh.

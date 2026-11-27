@@ -1,22 +1,35 @@
+# SAKIB ENTERPRISE — Apache configuration
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Force HTTPS (uncomment on production)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # If request is not an existing file/dir, route through index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=/$1 [L,QSA]
+</IfModule>
+
+# Disable directory listing
 Options -Indexes
 
-<IfModule mod_authz_core.c>
-  <FilesMatch "^\.(?!well-known/)">
-    Require all denied
-  </FilesMatch>
-</IfModule>
-
+# Security headers
 <IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-  Header always set X-Frame-Options "DENY"
-  Header always set Referrer-Policy "strict-origin-when-cross-origin"
-  Header always set Permissions-Policy "camera=(), geolocation=(), microphone=()"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-  RewriteRule ^ index.php [QSA,L]
+# Cache static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
 </IfModule>

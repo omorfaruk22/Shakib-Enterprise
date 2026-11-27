@@ -1,0 +1,10 @@
+<div class="flex items-center justify-between mb-6"><h1 class="font-display font-extrabold text-2xl text-brand-navy"><?= $service ? 'Edit' : 'Add' ?> Service</h1><a href="<?= url('/admin/services') ?>" class="text-sm text-gray-500 hover:text-brand-navy"><i class="fa-solid fa-arrow-left mr-1"></i> Back</a></div>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl"><form method="POST" action="<?= $service ? url('/admin/services/'.$service['id']) : url('/admin/services') ?>" enctype="multipart/form-data" class="space-y-4"><?= csrf_field() ?>
+<?php partial('input', ['name'=>'name','label'=>'Service Name','required'=>true,'value'=>$service['name'] ?? '']); ?>
+<?php partial('input', ['name'=>'icon','label'=>'Font Awesome Icon Class','value'=>$service['icon'] ?? 'fa-solid fa-plane','placeholder'=>'fa-solid fa-plane']); ?>
+<?php partial('input', ['name'=>'short_description','label'=>'Short Description','value'=>$service['short_description'] ?? '']); ?>
+<?php partial('textarea', ['name'=>'description','label'=>'Full Description','rows'=>5,'value'=>$service['description'] ?? '']); ?>
+<div><label class="block text-sm font-semibold text-gray-700 mb-1.5">Image (optional)</label><input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="w-full text-sm"><?php if (!empty($service['image'])): ?><div class="mt-2 text-xs text-gray-500">Current: <?= htmlspecialchars($service['image']) ?></div><?php endif; ?></div>
+<div class="grid grid-cols-2 gap-4"><?php partial('input', ['name'=>'sort_order','label'=>'Sort Order','type'=>'number','value'=>$service['sort_order'] ?? 0]); ?>
+<div class="flex items-center gap-2 mt-6"><input type="checkbox" name="is_active" id="is_active" <?= !$service || !empty($service['is_active']) ? 'checked' : '' ?> class="w-4 h-4"><label for="is_active" class="text-sm font-semibold">Active</label></div></div>
+<button class="btn-primary px-6 py-2.5 rounded-lg font-semibold text-sm"><i class="fa-solid fa-save mr-1"></i> Save</button></form></div>

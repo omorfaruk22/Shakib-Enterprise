@@ -1,94 +1,79 @@
-# Sakib Enterprise Route Map
+# SAKIB ENTERPRISE — Routes
+**Front Controller:** `public/index.php` → `bootstrap.php` → `routes/web.php` + `routes/admin.php`  
+**Router:** Lightweight regex router (`app/Core/Router.php`). Clean URLs via `.htaccess` → `index.php?route=...`  
+**Base URL:** Configured via `APP_URL` in `.env` (e.g., `https://sakibenterprise.com.bd`). All links use `url()` helper.
 
-Routes use raw PHP and PDO and work on Apache shared hosting. Clean paths use the included rewrite rules. Every state-changing public or admin action uses POST, server-side validation, and CSRF protection. Successful form posts use redirects.
+## Public Routes
 
-## Public routes
+| Method | URL | Controller@Method | Description |
+|---|---|---|---|
+| GET | `/` | HomeController@index | Homepage (dynamic sections) |
+| GET | `/air-ticket` | ServiceController@airTicket | Air ticket info + form |
+| POST | `/air-ticket/inquiry` | BookingController@storeAir | Save air inquiry → success |
+| GET | `/ship-ticket` | ServiceController@shipTicket | Ship info + routes + form |
+| POST | `/ship-ticket/inquiry` | BookingController@storeShip | Save ship inquiry |
+| GET | `/bus-ticket` | ServiceController@busTicket | Bus info + form |
+| POST | `/bus-ticket/inquiry` | BookingController@storeBus | Save bus inquiry |
+| GET | `/tours` | TourController@index | Tour listing (search/filter/paginate) |
+| GET | `/tours/{slug}` | TourController@show | Tour details + booking form + related |
+| POST | `/tours/{slug}/inquiry` | BookingController@storeTour | Save tour inquiry |
+| GET | `/holiday-packages` | HolidayController@index | Holiday listing |
+| GET | `/holiday-packages/{slug}` | HolidayController@show | Holiday details + booking form |
+| POST | `/holiday-packages/{slug}/inquiry` | BookingController@storeHoliday | Save holiday inquiry |
+| GET | `/about` | PageController@about | About (DB content) |
+| GET | `/contact` | PageController@contact | Contact info + form + maps |
+| POST | `/contact` | ContactController@store | Save contact message |
+| GET | `/booking-success` | BookingController@success | Success page `?ref=SE-...` |
+| GET | `/sitemap.xml` | SeoController@sitemap | Dynamic sitemap |
+| GET | `/robots.txt` | static `public/robots.txt` | Robots |
+| GET | `/install` | `install.php` | One-time admin setup (disable after) |
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/` | Homepage with database-backed services, destinations, packages, testimonials and settings |
-| GET | `/services` | Active public services listing |
-| GET | `/air-tickets` | Air-ticket information |
-| GET | `/ship-tickets` | Ship-ticket information and available routes |
-| GET | `/bus-tickets` | Bus-ticket information |
-| GET | `/tour-travel` | Tour information |
-| GET | `/holiday-packages` | Holiday-package information |
-| GET | `/services/{slug}` | Active service details |
-| GET | `/destinations` | Active destinations |
-| GET | `/destinations/{slug}` | Active destination details |
-| GET | `/packages` | Active tour and holiday packages; supports `?type=tour` or `?type=holiday` |
-| GET | `/packages/{slug}` | Active package details |
-| GET | `/pages/{slug}` | Published website page |
-| GET | `/about-us` | Published About Us content with safe fallback |
-| GET | `/contact-us` | Contact details and general inquiry form |
-| POST | `/contact-us` | Validate and store a contact message |
-| GET | `/login` | Customer sign-in and registration page; public browsing remains available |
-| POST | `/login` | Authenticate a customer account and continue to its requested booking page |
-| POST | `/register` | Create a customer account with a password hash and start a session |
-| GET | `/customer/login` | Legacy status-access form using booking reference and submitted phone |
-| POST | `/customer/login` | Verify inquiry ownership and start a rate-limited, time-limited session |
-| GET | `/customer/dashboard` | View the signed-in customer's inquiry references and latest statuses |
-| POST | `/customer/logout` | End the customer portal session |
-| GET | `/booking/{service}` | Service-specific inquiry form; redirects guests to sign in first |
-| POST | `/booking/submit` | Require an authenticated customer, then validate and store the inquiry under that account |
-| GET | `/booking/success/{reference}` | Private, non-cacheable inquiry confirmation; not a ticket confirmation |
-| GET | `/health` | Non-sensitive application liveness check |
-| GET | `/health/database` | Local/private database diagnostic; do not expose publicly in production |
+## Admin Routes (prefix `/admin`, all require auth except login)
 
-## Admin access and routes
+| Method | URL | Controller@Method | Description |
+|---|---|---|---|
+| GET | `/admin/login` | Admin\AuthController@showLogin | Login form |
+| POST | `/admin/login` | Admin\AuthController@login | Authenticate + rate limit |
+| POST | `/admin/logout` | Admin\AuthController@logout | Logout + regenerate session |
+| GET | `/admin/dashboard` | Admin\DashboardController@index | Stats + recent + summaries |
+| GET | `/admin/bookings` | Admin\BookingController@index | List + search/filter/paginate |
+| GET | `/admin/bookings/export` | Admin\BookingController@exportCsv | CSV export (filtered) |
+| GET | `/admin/bookings/{id}` | Admin\BookingController@show | Details + notes + history |
+| POST | `/admin/bookings/{id}/status` | Admin\BookingController@updateStatus | Change status (+history) |
+| POST | `/admin/bookings/{id}/note` | Admin\BookingController@addNote | Add internal note |
+| POST | `/admin/bookings/{id}/delete` | Admin\BookingController@destroy | Delete (confirm) |
+| GET | `/admin/customers` | Admin\CustomerController@index | List + search |
+| GET | `/admin/customers/{id}` | Admin\CustomerController@show | Details + booking history |
+| GET | `/admin/services` | Admin\ServiceController@index | List |
+| GET/POST | `/admin/services/create` | Admin\ServiceController@create/store | Create |
+| GET/POST | `/admin/services/{id}/edit` | Admin\ServiceController@edit/update | Edit |
+| POST | `/admin/services/{id}/delete` | Admin\ServiceController@destroy | Delete |
+| GET/POST | `/admin/tour-packages[/create]` etc. | Admin\PackageController (type=tour) | Tour CRUD |
+| GET/POST | `/admin/holiday-packages[/create]` etc. | Admin\PackageController (type=holiday) | Holiday CRUD |
+| GET/POST | `/admin/destinations[/create]` etc. | Admin\DestinationController | Destination CRUD |
+| GET/POST | `/admin/ship-routes[/create]` etc. | Admin\ShipRouteController | Ship route CRUD |
+| GET/POST | `/admin/testimonials[/create]` etc. | Admin\TestimonialController | Testimonial CRUD |
+| GET | `/admin/contacts` | Admin\ContactController@index | Messages list |
+| GET | `/admin/contacts/{id}` | Admin\ContactController@show | Message details |
+| POST | `/admin/contacts/{id}/read` | Admin\ContactController@markRead | Mark read/unread |
+| POST | `/admin/contacts/{id}/reply` | Admin\ContactController@markReplied | Mark replied |
+| POST | `/admin/contacts/{id}/note` | Admin\ContactController@addNote | Internal note |
+| POST | `/admin/contacts/{id}/delete` | Admin\ContactController@destroy | Delete |
+| GET/POST | `/admin/settings` | Admin\SettingController@index/update | CMS settings (grouped) |
+| GET | `/admin/activity-logs` | Admin\DashboardController@logs | Activity log list |
+| GET/POST | `/admin/profile` | Admin\AuthController@profile/updateProfile | Change name/password |
 
-There is no public administrator registration form. `/admin/setup` creates the first administrator only when `ADMIN_SETUP_TOKEN` is configured and no administrator exists. Setup closes after the first account is created. In production, first-admin setup requires HTTPS. Login attempts and setup attempts are rate limited. Admin sessions expire after inactivity and all admin write routes require a valid CSRF token.
+## URL Examples
+- `/tours/coxs-bazar-3-days-tour`
+- `/holiday-packages/saint-martin-holiday`
+- `/admin/bookings?status=pending&type=air&search=017`
+- `/booking-success?ref=SE-2026-8K3P9Q`
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET/POST | `/admin/setup` | One-time first-admin form; available only before an admin account exists |
-| GET | `/admin/login` | Admin sign-in form |
-| POST | `/admin/login` | Verify credentials, throttle failures and rotate the session ID |
-| POST | `/admin/logout` | Record logout, clear the session and expire the session cookie |
-| GET | `/admin` | Dashboard with live database counts and recent activity |
-| GET | `/admin/bookings` | Searchable, filterable and paginated travel inquiries |
-| GET | `/admin/bookings/export.csv` | Export filtered inquiries with spreadsheet-formula escaping |
-| GET | `/admin/bookings/{id}` | Inquiry details, customer, internal notes and status history |
-| POST | `/admin/bookings/{id}/details` | Update travel details |
-| POST | `/admin/bookings/{id}/status` | Change status and add a status-history event |
-| POST | `/admin/bookings/{id}/notes` | Add an internal admin note |
-| POST | `/admin/bookings/{id}/delete` | Delete a confirmed inquiry and its notes/history; retain its customer |
-| GET | `/admin/customers` | Searchable customer list and inquiry counts |
-| GET | `/admin/customers/{id}` | Customer details and recent inquiry history |
-| POST | `/admin/customers/{id}/update` | Update customer name, phone or email |
-| POST | `/admin/customers/{id}/delete` | Delete a customer only when no inquiry history exists |
-| GET | `/admin/messages` | Searchable, filterable contact-message list |
-| GET | `/admin/messages/export.csv` | Export filtered contact messages with spreadsheet-formula escaping |
-| GET | `/admin/messages/{id}` | Contact-message details and admin reply note |
-| POST | `/admin/messages/{id}/update` | Update message status and internal note |
-| POST | `/admin/messages/{id}/delete` | Delete a confirmed contact message |
-| GET | `/admin/catalog/{resource}` | Search and manage the `services`, `destinations`, `packages` or `ship-routes` resource |
-| POST | `/admin/catalog/{resource}/save` | Create or update a service, destination, package or ship route |
-| POST | `/admin/catalog/{resource}/{id}/delete` | Delete a confirmed catalog record when database references allow it |
-| GET | `/admin/content` | Redirect to website-page management |
-| GET | `/admin/content/pages` | Search and manage published or draft website pages |
-| POST | `/admin/content/pages/save` | Create or update a website page |
-| POST | `/admin/content/pages/{id}/delete` | Delete a confirmed website page |
-| GET | `/admin/testimonials` | Search and manage testimonials |
-| POST | `/admin/testimonials/save` | Create or update a testimonial and approval state |
-| POST | `/admin/testimonials/{id}/delete` | Delete a confirmed testimonial |
-| GET/POST | `/admin/settings` | View or update business contact, homepage, social and map settings |
-| GET | `/admin/media` | View the media library |
-| POST | `/admin/media/upload` | Upload a validated JPEG, PNG or WebP image (5 MB maximum) |
-| POST | `/admin/media/{id}/delete` | Delete a confirmed media record and generated file |
-| GET | `/admin/activity` | Search and review admin activity logs |
+## Security Notes
+- All POST routes require valid CSRF token (`_token` field).
+- Admin routes wrapped in `AuthMiddleware` (session check + timeout).
+- Booking/contact POSTs rate-limited by IP (simple throttle) + honeypot field.
+- File uploads only via admin POSTs with MIME/size validation.
 
-## Access and error handling
-
-- Unauthenticated admin requests redirect to `/admin/login` with a validated local return path.
-- Admin pages send private, no-store cache headers and render a `noindex` directive.
-- Invalid CSRF tokens return 403; invalid form data returns a safe message without exposing database details.
-- Unknown routes and missing records return a branded 404. Production errors do not expose stack traces or credentials.
-
-## Planned public routes
-
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/whatsapp` | Redirect to a configured click-to-chat link |
-| GET | `/sitemap.xml` | Sitemap for published pages and public catalog records |
-| GET | `/robots.txt` | Search-crawler rules |
+---
+*Phase 01 Deliverable — ROUTES.md*
