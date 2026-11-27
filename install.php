@@ -6,7 +6,7 @@ $installedLock = __DIR__ . '/storage/installed.lock';
 $requiredTables = [
     'admin_activity_logs', 'admin_login_attempts', 'admins', 'booking_notes',
     'booking_status_history', 'bookings', 'contact_messages', 'customers',
-    'destinations', 'holiday_packages', 'media', 'services', 'ship_routes',
+    'destinations', 'holiday_packages', 'why_us_cards', 'process_steps', 'company_stats', 'media', 'services', 'ship_routes',
     'testimonials', 'tour_packages', 'website_pages', 'website_settings',
 ];
 $error = is_file($installedLock) ? 'This application has already been installed. The installer is locked.' : '';

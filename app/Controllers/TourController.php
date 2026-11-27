@@ -32,6 +32,7 @@ class TourController extends Controller
         View::render('tour-details', [
             'title' => $tour['title'] . ' | SAKIB ENTERPRISE',
             'tour' => $tour,
+            'package' => $tour, // alias for shared partials
             'related' => TourPackage::related((int)$tour['id'], 3),
         ], 'main');
     }

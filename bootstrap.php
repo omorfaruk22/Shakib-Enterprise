@@ -62,3 +62,35 @@ set_exception_handler(function ($e) {
         echo '<!DOCTYPE html><html><head><title>Error</title></head><body style="font-family:sans-serif;text-align:center;padding:60px 20px"><h1>Something went wrong</h1><p>Please try again later or contact us.</p><p><a href="/">Go Home</a></p></body></html>';
     }
 });
+
+// ---------- Auto-run pending migrations (idempotent) ----------
+// Runs once per deployment when new tables need to be added. Safe to call repeatedly.
+if (php_sapi_name() !== 'cli' && class_exists('\\App\\Core\\Database') && getenv('DB_HOST')) {
+    try {
+        $pdo = \App\Core\Database::getConnection();
+        $migrationsDir = __DIR__ . '/database/migrations';
+        $lock = __DIR__ . '/storage/cache/.migrations_applied';
+        $applied = [];
+        if (is_file($lock)) {
+            $applied = json_decode(@file_get_contents($lock) ?: '[]', true) ?: [];
+        }
+        foreach (glob($migrationsDir . '/*.sql') ?: [] as $sqlFile) {
+            $key = basename($sqlFile);
+            if (in_array($key, $applied, true)) continue;
+            $sql = @file_get_contents($sqlFile);
+            if (!$sql) continue;
+            // strip comments safely
+            $sql = preg_replace('/^[ \t]*--.*$/m', '', $sql);
+            $sql = preg_replace('!/\*.*?\*/!s', '', $sql);
+            foreach (array_filter(array_map('trim', explode(';', $sql))) as $stmt) {
+                if ($stmt) {
+                    try { $pdo->exec($stmt); } catch (\Throwable $ignored) {}
+                }
+            }
+            $applied[] = $key;
+            @file_put_contents($lock, json_encode($applied), LOCK_EX);
+        }
+    } catch (\Throwable $ignore) {
+        // DB not yet configured (install phase) — skip silently
+    }
+}

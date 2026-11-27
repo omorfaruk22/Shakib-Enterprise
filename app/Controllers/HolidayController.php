@@ -32,6 +32,7 @@ class HolidayController extends Controller
         View::render('holiday-details', [
             'title' => $pkg['title'] . ' | SAKIB ENTERPRISE',
             'pkg' => $pkg,
+            'package' => $pkg, // alias for shared partials
             'related' => HolidayPackage::related((int)$pkg['id'], 3),
         ], 'main');
     }

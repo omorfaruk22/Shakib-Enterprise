@@ -19,8 +19,14 @@ if ($isFullAdmin) {
     'holiday-packages'=>['label'=>'Holiday Packages','icon'=>'fa-solid fa-umbrella-beach','url'=>'/admin/holiday-packages'],
     'ship-routes'=>['label'=>'Ship Routes','icon'=>'fa-solid fa-ship','url'=>'/admin/ship-routes'],
     'testimonials'=>['label'=>'Testimonials','icon'=>'fa-solid fa-quote-left','url'=>'/admin/testimonials'],
+    'why-us'    => ['label'=>'Why Us Cards','icon'=>'fa-solid fa-star','url'=>'/admin/why-us'],
+    'process-steps' => ['label'=>'Process Steps','icon'=>'fa-solid fa-list-ol','url'=>'/admin/process-steps'],
+    'company-stats' => ['label'=>'Company Stats','icon'=>'fa-solid fa-chart-simple','url'=>'/admin/company-stats'],
   ];
 }
+
+// Active-section detection for homepage content groups
+$homeContentGroup = in_array($section, ['why-us','process-steps','company-stats']) ? $section : null;
 $nav += [
   'contacts'  => ['label'=>'Messages','icon'=>'fa-solid fa-envelope','url'=>'/admin/contacts'],
 ];

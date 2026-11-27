@@ -106,26 +106,42 @@ $heroImg = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&
   </div>
 </section>
 
+<!-- COMPANY STATS -->
+<?php if (!empty($companyStats)): ?>
+<section class="py-12 bg-brand-navy text-white">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+      <?php foreach ($companyStats as $s): ?>
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-display font-extrabold text-brand-accent mb-1"><?= htmlspecialchars($s['number']) ?></div>
+          <div class="flex items-center justify-center gap-2 text-white/80 text-sm">
+            <i class="<?= htmlspecialchars($s['icon']) ?>"></i>
+            <span><?= htmlspecialchars($s['label']) ?></span>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
 <!-- WHY CHOOSE US -->
 <section class="py-16 md:py-20 bg-white">
   <div class="max-w-7xl mx-auto px-4">
     <?php partial('section-heading', ['eyebrow'=>'Why Choose Us','title'=>setting('homepage_whyus_title','Why Choose Us'),'subtitle'=>setting('homepage_whyus_subtitle','We are committed to making your trip safe, comfortable and memorable.'),'accent'=>true]); ?>
+    <?php if (empty($whyUsCards)): ?>
+      <?php partial('empty-state', ['icon'=>'fa-solid fa-star','title'=>'Why Us cards coming soon','description'=>'Add cards from Admin → Why Us Cards menu.']); ?>
+    <?php else: ?>
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <?php
-      $why = [
-        ['fa-solid fa-shield-halved','Trusted & Reliable','Thousands of happy travelers choose us every year for their journeys.'],
-        ['fa-solid fa-tag','Best Price Guarantee','Competitive pricing on tickets and packages with no hidden charges.'],
-        ['fa-solid fa-headset','24/7 Support','We are here to help before, during and after your trip.'],
-        ['fa-solid fa-star','Premium Quality','Handpicked hotels, transport and guides for a premium experience.'],
-      ];
-      foreach ($why as $w): ?>
+      <?php foreach ($whyUsCards as $w): ?>
         <div class="p-6 rounded-2xl bg-brand-light">
-          <div class="w-12 h-12 rounded-xl bg-brand-navy text-white flex items-center justify-center text-lg mb-4"><i class="<?= $w[0] ?>"></i></div>
-          <h3 class="font-display font-bold text-lg text-brand-navy mb-2"><?= $w[1] ?></h3>
-          <p class="text-sm text-gray-600 leading-relaxed"><?= $w[2] ?></p>
+          <div class="w-12 h-12 rounded-xl bg-brand-navy text-white flex items-center justify-center text-lg mb-4"><i class="<?= htmlspecialchars($w['icon']) ?>"></i></div>
+          <h3 class="font-display font-bold text-lg text-brand-navy mb-2"><?= htmlspecialchars($w['title']) ?></h3>
+          <p class="text-sm text-gray-600 leading-relaxed"><?= htmlspecialchars($w['description']) ?></p>
         </div>
       <?php endforeach; ?>
     </div>
+    <?php endif; ?>
   </div>
 </section>
 
@@ -133,21 +149,19 @@ $heroImg = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&
 <section class="py-16 md:py-20 bg-brand-navy text-white">
   <div class="max-w-7xl mx-auto px-4">
     <?php partial('section-heading', ['eyebrow'=>'Simple Process','title'=>setting('homepage_process_title','Our Booking Process'),'subtitle'=>setting('homepage_process_subtitle','Inquiry → Contact → Confirm — three easy steps to your journey.'),'accent'=>true]); ?>
-    <div class="grid md:grid-cols-3 gap-6">
-      <?php
-      $steps = [
-        ['1','Send Inquiry','Fill out the booking form on our website with your travel details.'],
-        ['2','We Contact You','Our team calls you back to confirm details, availability and pricing.'],
-        ['3','Confirm & Travel','Complete payment and documents, then enjoy your trip with peace of mind.'],
-      ];
-      foreach ($steps as $i => $s): ?>
+    <?php if (empty($processSteps)): ?>
+      <p class="text-center text-white/60 py-8">Process steps will appear here once added from Admin.</p>
+    <?php else: ?>
+    <div class="grid md:grid-cols-<?= min(3, count($processSteps)) ?> gap-6">
+      <?php foreach ($processSteps as $s): ?>
         <div class="relative p-6 rounded-2xl bg-white/5 border border-white/10">
-          <div class="w-12 h-12 rounded-full bg-brand-red text-white flex items-center justify-center font-display font-extrabold text-xl mb-4"><?= $s[0] ?></div>
-          <h3 class="font-display font-bold text-xl mb-2"><?= $s[1] ?></h3>
-          <p class="text-white/80 text-sm leading-relaxed"><?= $s[2] ?></p>
+          <div class="w-12 h-12 rounded-full bg-brand-red text-white flex items-center justify-center font-display font-extrabold text-xl mb-4"><?= (int)$s['step_number'] ?></div>
+          <h3 class="font-display font-bold text-xl mb-2"><?= htmlspecialchars($s['title']) ?></h3>
+          <p class="text-white/80 text-sm leading-relaxed"><?= htmlspecialchars($s['description']) ?></p>
         </div>
       <?php endforeach; ?>
     </div>
+    <?php endif; ?>
   </div>
 </section>
 

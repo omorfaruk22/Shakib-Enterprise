@@ -10,6 +10,7 @@ use App\Controllers\Admin\ShipRouteController;
 use App\Controllers\Admin\ContactController;
 use App\Controllers\Admin\TestimonialController;
 use App\Controllers\Admin\SettingController;
+use App\Controllers\Admin\ContentItemController;
 use App\Middleware\AuthMiddleware;
 
 // Public admin
@@ -101,3 +102,13 @@ $router->post('/admin/managers', $protected(function () { (new \App\Controllers\
 $router->get('/admin/managers/{id}/edit', $protected(function ($id) { (new \App\Controllers\Admin\ManagerController())->edit($id); }, true));
 $router->post('/admin/managers/{id}', $protected(function ($id) { (new \App\Controllers\Admin\ManagerController())->update($id); }, true));
 $router->post('/admin/managers/{id}/delete', $protected(function ($id) { (new \App\Controllers\Admin\ManagerController())->destroy($id); }, true));
+
+// Homepage CMS — Why Us, Process Steps, Company Stats
+foreach (['why-us','process-steps','company-stats'] as $section) {
+    $router->get("/admin/$section",          $protected(function () use ($section) { (new ContentItemController())->index($section); }, true));
+    $router->get("/admin/$section/create",   $protected(function () use ($section) { (new ContentItemController())->create($section); }, true));
+    $router->post("/admin/$section",         $protected(function () use ($section) { (new ContentItemController())->store($section); }, true));
+    $router->get("/admin/$section/{id}/edit",$protected(function ($id) use ($section) { (new ContentItemController())->edit($section, $id); }, true));
+    $router->post("/admin/$section/{id}",    $protected(function ($id) use ($section) { (new ContentItemController())->update($section, $id); }, true));
+    $router->post("/admin/$section/{id}/delete", $protected(function ($id) use ($section) { (new ContentItemController())->destroy($section, $id); }, true));
+}
