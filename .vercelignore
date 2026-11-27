@@ -1,0 +1,10 @@
+.env
+storage/logs/*
+storage/cache/*
+public/assets/uploads/*
+*.log
+tests/
+docs/
+install.php
+preview-homepage.jpg
+/tmp
