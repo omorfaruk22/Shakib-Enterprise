@@ -20,7 +20,7 @@ Set-Location -LiteralPath "D:\Omor Faruk\Project\Shakib EnterPrice"
 powershell -ExecutionPolicy Bypass -File scripts\start-local-mysql.ps1
 ```
 
-The project schema has already been imported locally. A fresh database install should create an empty database named `sakib_enterprise` first, then import `database/sakib_enterprise.sql`; this SQL file creates tables only and does not insert a default admin. When upgrading an older database, apply `database/migrations/2026_11_26_add_booking_submission_token.sql` if it predates Phase 6, then apply `database/migrations/2026_11_26_backfill_booking_status_history.sql` once to record a baseline for existing inquiries, and apply `database/migrations/2026_11_27_add_customer_portal_login_attempts.sql` for customer status access. New inquiries write their initial `pending` history entry automatically.
+The project schema has already been imported locally. A fresh database install should create an empty database named `sakib_enterprise` first, then import `database/sakib_enterprise.sql`; this SQL file creates tables only and does not insert a default admin. When upgrading an older database, apply `database/migrations/2026_11_26_add_booking_submission_token.sql` if it predates Phase 6, then apply `database/migrations/2026_11_26_backfill_booking_status_history.sql` once to record a baseline for existing inquiries. Apply `database/migrations/2026_11_27_add_customer_portal_login_attempts.sql` for legacy inquiry tracking and `database/migrations/2026_11_27_add_customer_accounts.sql` for email/password customer accounts. New inquiries write their initial `pending` history entry automatically.
 
 To stop the local MySQL process cleanly:
 
@@ -55,7 +55,7 @@ php scripts/check-database.php
 
 - With the local PHP server and MySQL running, open `http://127.0.0.1:8000/admin/setup`.
 - The ignored local `.env` file contains the one-time `ADMIN_SETUP_TOKEN`. Use it to create the real administrator account with a password of at least 12 characters.
-- Setup closes automatically when an administrator exists. There is no public registration form. Sign in at `/admin/login`.
+- Setup closes automatically when an administrator exists. There is no public administrator registration form. Customers can register or sign in at `/login`. Administrators sign in at `/admin/login`.
 - Remove `ADMIN_SETUP_TOKEN` from `.env` after creating the account. Do not commit `.env` or share the administrator password.
 
 ## cPanel deployment
@@ -64,4 +64,4 @@ Follow [DEPLOYMENT.md](DEPLOYMENT.md) for the private/public directory layout, d
 
 The public pages, booking/contact inquiries, and Phase 7 database integration are implemented. Phase 8 adds first-admin setup, login, the responsive admin dashboard, booking/customer/contact management, catalog/content/settings CRUD, safe image uploads, and activity history. Public and admin views use Tailwind utility classes in HTML; the committed `site.css` is the compiled stylesheet required by shared hosting. Add the business's confirmed phone/WhatsApp/email details and approved destination/package/testimonial content before launch.
 
-Customers can open **Track inquiry** in the public navigation and enter the booking reference from their inquiry confirmation plus the phone number used on that inquiry. They will see the latest status of all inquiries associated with that customer record. No customer password or OTP is required; the booking reference is a high-entropy access credential, so customers should keep it private.
+Public pages, services, destinations, and packages are visible without signing in. Customers must create an account or sign in at /login before opening or submitting a booking inquiry. Customer accounts use an email address and password; booking forms use the account phone and link every inquiry to that customer. The same page provides an administrator sign-in form that accepts the admin Gmail address and its existing admin password. Existing customers can still use the legacy Track inquiry page with a booking reference and phone. Email verification and Google OAuth are not configured.

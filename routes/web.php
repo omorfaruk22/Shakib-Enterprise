@@ -6,6 +6,7 @@ use App\Helpers\Logger;
 use App\Services\BookingService;
 use App\Services\BookingSubmissionException;
 use App\Services\ContactMessageService;
+use App\Services\CustomerAuthService;
 use App\Services\CustomerPortalService;
 use App\Services\HomepageService;
 use App\Services\PublicPagesService;
@@ -127,6 +128,20 @@ $router->get('/booking/{service}', static function (array $parameters) use ($pag
     }
 
     start_secure_session();
+    $customerAccount = (new CustomerAuthService())->currentCustomer();
+    if ($customerAccount === null) {
+        $nextParameters = [];
+        foreach (['package', 'destination'] as $parameterName) {
+            $parameterValue = $_GET[$parameterName] ?? null;
+            if (is_string($parameterValue) && preg_match('/^[a-z0-9-]{1,180}$/D', $parameterValue) === 1) {
+                $nextParameters[$parameterName] = $parameterValue;
+            }
+        }
+        $nextPath = '/booking/' . $slug . ($nextParameters === [] ? '' : '?' . http_build_query($nextParameters, '', '&', PHP_QUERY_RFC3986));
+        $_SESSION['_customer_after_login'] = $nextPath;
+        $_SESSION['_login_notice'] = 'Sign in or create a customer account to continue with your booking inquiry.';
+        redirect('/login?next=' . rawurlencode($nextPath), 303);
+    }
     $packageType = $bookingType['type'] === 'tour_package' ? 'tour' : ($bookingType['type'] === 'holiday_package' ? 'holiday' : null);
     $packages = $packageType !== null ? $pageService->packages($packageType) : [];
     $requestedPackage = '';
@@ -148,6 +163,7 @@ $router->get('/booking/{service}', static function (array $parameters) use ($pag
 
     $renderPage('booking-form', (string) $bookingType['label'], 'Send a travel inquiry to SAKIB ENTERPRISE.', '/booking/' . $slug, [
         'bookingType' => $bookingType,
+        'authenticatedCustomer' => $customerAccount,
         'service' => $service,
         'packages' => $packages,
         'shipRoutes' => $slug === 'ship-ticket' ? $pageService->shipRoutes() : [],
@@ -169,6 +185,18 @@ $router->post('/booking/submit', static function () use ($pageService, $renderPa
         return;
     }
 
+    $customerAccount = (new CustomerAuthService())->currentCustomer();
+    if ($customerAccount === null) {
+        $nextPath = '/booking/' . $slug;
+        $_SESSION['_customer_after_login'] = $nextPath;
+        $_SESSION['_login_notice'] = 'Sign in or create a customer account to submit a booking inquiry.';
+        redirect('/login?next=' . rawurlencode($nextPath), 303);
+    }
+    $bookingInput = $_POST;
+    $bookingInput['full_name'] = (string) $customerAccount['full_name'];
+    $bookingInput['phone'] = (string) $customerAccount['phone'];
+    $bookingInput['email'] = (string) $customerAccount['account_email'];
+
     $packageType = $bookingType['type'] === 'tour_package' ? 'tour' : ($bookingType['type'] === 'holiday_package' ? 'holiday' : null);
     $packages = $packageType !== null ? $pageService->packages($packageType) : [];
     $shipRoutes = $slug === 'ship-ticket' ? $pageService->shipRoutes() : [];
@@ -179,9 +207,10 @@ $router->post('/booking/submit', static function () use ($pageService, $renderPa
         http_response_code(400);
         $errors = ['_form' => 'This form has expired. Please reload it and try again.'];
         $renderPage('booking-form', (string) $bookingType['label'], 'Send a travel inquiry to SAKIB ENTERPRISE.', '/booking/' . $slug, [
-            'bookingType' => $bookingType, 'service' => $service, 'packages' => $packages, 'shipRoutes' => $shipRoutes,
+            'bookingType' => $bookingType,
+            'authenticatedCustomer' => $customerAccount, 'service' => $service, 'packages' => $packages, 'shipRoutes' => $shipRoutes,
             'requestedPackage' => '', 'requestedDestination' => '', 'submissionToken' => issue_booking_submission_token(),
-            'errors' => $errors, 'old' => $_POST,
+            'errors' => $errors, 'old' => $bookingInput,
         ]);
         return;
     }
@@ -205,7 +234,7 @@ $router->post('/booking/submit', static function () use ($pageService, $renderPa
         http_response_code(422);
     } else {
         $bookingService = new BookingService();
-        $validation = $bookingService->validate($_POST, $bookingType);
+        $validation = $bookingService->validate($bookingInput, $bookingType);
         $errors = $validation['errors'];
         if ($errors !== []) {
             http_response_code(422);
@@ -243,6 +272,7 @@ $router->post('/booking/submit', static function () use ($pageService, $renderPa
     $requestedDestination = isset($_POST['destination']) && is_string($_POST['destination']) ? $_POST['destination'] : '';
     $renderPage('booking-form', (string) $bookingType['label'], 'Send a travel inquiry to SAKIB ENTERPRISE.', '/booking/' . $slug, [
         'bookingType' => $bookingType,
+            'authenticatedCustomer' => $customerAccount,
         'service' => $service,
         'packages' => $packages,
         'shipRoutes' => $shipRoutes,
@@ -250,7 +280,7 @@ $router->post('/booking/submit', static function () use ($pageService, $renderPa
         'requestedDestination' => $requestedDestination,
         'submissionToken' => $submissionToken,
         'errors' => $errors,
-        'old' => $_POST,
+        'old' => $bookingInput,
     ]);
 });
 
@@ -376,6 +406,92 @@ $router->post('/contact-us', static function () use ($renderContact): void {
     }
 });
 
+$renderAuthLogin = static function (
+    string $nextPath = '/customer/dashboard',
+    ?string $loginError = null,
+    array $registerErrors = [],
+    array $oldRegistration = [],
+    ?string $notice = null
+) use ($renderPage): void {
+    start_secure_session();
+    $renderPage('auth-login', 'Sign in or create account', 'Browse travel options publicly, then sign in to send a booking inquiry.', '/login', [
+        'csrfToken' => csrf_token(),
+        'nextPath' => CustomerAuthService::safeReturnPath($nextPath) ?? '/customer/dashboard',
+        'loginError' => $loginError,
+        'registerErrors' => $registerErrors,
+        'oldRegistration' => $oldRegistration,
+        'notice' => $notice,
+    ]);
+};
+
+$router->get('/login', static function () use ($renderPage, $renderAuthLogin): void {
+    start_secure_session();
+    $auth = new CustomerAuthService();
+    $portal = new CustomerPortalService();
+    $nextCandidate = $_GET['next'] ?? $_SESSION['_customer_after_login'] ?? null;
+    $nextPath = CustomerAuthService::safeReturnPath($nextCandidate) ?? '/customer/dashboard';
+    if (isset($_GET['next'])) {
+        $_SESSION['_customer_after_login'] = $nextPath;
+    }
+    if ($auth->currentCustomerId() !== null || $portal->currentCustomerId() !== null) {
+        redirect($nextPath, 303);
+    }
+    $notice = is_string($_SESSION['_login_notice'] ?? null) ? $_SESSION['_login_notice'] : null;
+    unset($_SESSION['_login_notice']);
+    $renderAuthLogin($nextPath, null, [], [], $notice);
+});
+
+$router->post('/login', static function () use ($renderAuthLogin): void {
+    start_secure_session();
+    $nextPath = CustomerAuthService::safeReturnPath($_POST['next'] ?? $_SESSION['_customer_after_login'] ?? null)
+        ?? '/customer/dashboard';
+    if (!is_valid_csrf_token($_POST['_csrf'] ?? null)) {
+        http_response_code(403);
+        $renderAuthLogin($nextPath, 'The security check expired. Reload the page and try again.');
+        return;
+    }
+    $result = (new CustomerAuthService())->login(
+        $_POST['email'] ?? null,
+        $_POST['password'] ?? null,
+        (string) ($_SERVER['REMOTE_ADDR'] ?? '')
+    );
+    if ($result['ok']) {
+        unset($_SESSION['_customer_after_login'], $_SESSION['_login_notice']);
+        redirect($nextPath, 303);
+    }
+    http_response_code($result['rate_limited'] ? 429 : 401);
+    $renderAuthLogin(
+        $nextPath,
+        $result['rate_limited'] ? 'Too many attempts. Wait 15 minutes and try again.' : 'Email address or password was not recognized.'
+    );
+});
+
+$router->post('/register', static function () use ($renderAuthLogin): void {
+    start_secure_session();
+    $nextPath = CustomerAuthService::safeReturnPath($_POST['next'] ?? $_SESSION['_customer_after_login'] ?? null)
+        ?? '/customer/dashboard';
+    if (!is_valid_csrf_token($_POST['_csrf'] ?? null)) {
+        http_response_code(403);
+        $renderAuthLogin($nextPath, null, ['_form' => 'The security check expired. Reload the page and try again.']);
+        return;
+    }
+    $result = (new CustomerAuthService())->register($_POST, (string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+    if ($result['ok']) {
+        unset($_SESSION['_customer_after_login'], $_SESSION['_login_notice']);
+        redirect($nextPath, 303);
+    }
+    http_response_code(422);
+    $oldRegistration = [
+        'full_name' => $_POST['full_name'] ?? '',
+        'phone' => $_POST['phone'] ?? '',
+        'email' => $_POST['email'] ?? '',
+        'booking_reference' => $_POST['booking_reference'] ?? '',
+    ];
+    $renderAuthLogin($nextPath, null, $result['errors'], $oldRegistration);
+});
+
+
+
 $customerLoginTitle = 'Customer booking status';
 $renderCustomerLogin = static function (?string $errorMessage = null) use ($renderPage, $customerLoginTitle): void {
     start_secure_session();
@@ -387,7 +503,7 @@ $renderCustomerLogin = static function (?string $errorMessage = null) use ($rend
 
 $router->get('/customer/login', static function () use ($renderCustomerLogin): void {
     $customerPortal = new CustomerPortalService();
-    if ($customerPortal->currentCustomerId() !== null) {
+    if ($customerPortal->currentCustomerId() !== null || (new CustomerAuthService())->currentCustomerId() !== null) {
         redirect('/customer/dashboard', 303);
     }
     $renderCustomerLogin();
@@ -423,15 +539,17 @@ $router->post('/customer/login', static function () use ($renderCustomerLogin): 
 
 $router->get('/customer/dashboard', static function () use ($renderPage): void {
     $customerPortal = new CustomerPortalService();
-    $customerId = $customerPortal->currentCustomerId();
+    $customerAuth = new CustomerAuthService();
+    $customerId = $customerAuth->currentCustomerId() ?? $customerPortal->currentCustomerId();
     if ($customerId === null) {
-        redirect('/customer/login', 303);
+        redirect('/login', 303);
     }
 
     $data = $customerPortal->dashboard($customerId);
     if ($data['customer'] === []) {
+        $customerAuth->logout();
         $customerPortal->logout();
-        redirect('/customer/login', 303);
+        redirect('/login', 303);
     }
 
     $renderPage('customer-dashboard', 'My travel inquiries', 'Review your inquiry references and their latest status.', '/customer/dashboard', [
@@ -443,9 +561,12 @@ $router->get('/customer/dashboard', static function () use ($renderPage): void {
 });
 
 $router->post('/customer/logout', static function (): void {
+    $customerAuth = new CustomerAuthService();
     $customerPortal = new CustomerPortalService();
-    if ($customerPortal->currentCustomerId() === null) {
-        redirect('/customer/login', 303);
+    $accountCustomerId = $customerAuth->currentCustomerId();
+    $portalCustomerId = $customerPortal->currentCustomerId();
+    if ($accountCustomerId === null && $portalCustomerId === null) {
+        redirect('/login', 303);
     }
     if (!is_valid_csrf_token($_POST['_csrf'] ?? null)) {
         http_response_code(403);
@@ -453,8 +574,13 @@ $router->post('/customer/logout', static function (): void {
         echo 'Security check failed';
         return;
     }
-    $customerPortal->logout();
-    redirect('/customer/login', 303);
+    if ($accountCustomerId !== null) {
+        $customerAuth->logout();
+    }
+    if ($portalCustomerId !== null) {
+        $customerPortal->logout();
+    }
+    redirect($accountCustomerId !== null ? '/login' : '/customer/login', 303);
 });
 
 $router->get('/health', static function (): void {

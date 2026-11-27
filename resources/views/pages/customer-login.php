@@ -10,6 +10,7 @@ $loginError = is_string($errorMessage ?? null) ? $errorMessage : '';
       <span class="text-xs font-extrabold uppercase tracking-[.14em] text-brand-red">Customer access</span>
       <h1 class="mt-2 text-3xl font-extrabold text-brand-navy">Check your inquiry status</h1>
       <p class="mt-3 text-sm leading-6 text-slate-600">Enter the booking reference from your inquiry confirmation and the same phone number you used when you sent it.</p>
+      <p class="mt-3 text-sm text-slate-600">Have a customer account? <a class="font-bold text-brand-navy underline" href="<?= e(app_url('/login')) ?>">Sign in or create one</a>.</p>
 
       <?php if ($loginError !== ''): ?><p class="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800" role="alert"><?= e($loginError) ?></p><?php endif; ?>
 

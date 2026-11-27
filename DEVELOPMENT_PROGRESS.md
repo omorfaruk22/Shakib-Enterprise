@@ -120,7 +120,7 @@
 - **Files modified:** `routes/web.php`, `resources/views/layouts/public.php`, `resources/views/pages/booking-success.php`, `database/sakib_enterprise.sql`, `DATABASE_DESIGN.md`, `REQUIREMENTS.md`, `ROUTES.md`, `README.md`, `DEVELOPMENT_PLAN.md`, and this progress record. `public/assets/css/site.css` was rebuilt.
 - **Database changes:** Applied the idempotent customer portal rate-limit migration to the configured local database.
 - **Checks performed:** PHP syntax lint passed for all six changed PHP files; Tailwind CSS v4.3.5 rebuilt the stylesheet; `git diff --check` passed. An end-to-end local flow verified inquiry submission, sign-in with its reference and matching phone, display of the inquiry and its initial Pending status, and CSRF-protected sign-out. The temporary booking, its customer (after confirming no other bookings were linked), and its hashed login-attempt row were removed; pre-existing database rows were preserved.
-- **Known limits / inputs needed:** No customer password or SMS/email OTP provider is configured, so sign-in requires the booking reference plus the inquiry phone. A customer must first submit an inquiry to obtain a reference. Apply the new migration on any existing production database before deployment.
+- **Known limits / inputs needed:** The reference-and-phone method remains available for older inquiries. Apply the customer portal migration on any existing production database before deployment.
 
 
 ## Phase 11 — Shared Hosting Deployment & Handover
@@ -135,3 +135,14 @@
 - **Remaining tasks:** Obtain host-specific non-secret details, verify the domain can serve the project's `public/` directory, and complete the go-live checklist before claiming deployment.
 
 
+
+## Phase 12 — Customer Accounts and Booking Gate
+
+- **Status:** Implementation complete; end-to-end verification is pending.
+- **Features added:** Public pages remain viewable before login; customers can register/sign in with email and password; both the booking form GET route and booking submission POST route require an authenticated account; customer identity is taken from the server session; the shared login page includes the admin Gmail/email and password form; older reference-and-phone inquiry tracking remains available.
+- **Privacy and security:** Passwords use PHP password_hash/password_verify; login failures are rate limited with hashed identifiers and IPs; forms use CSRF; customer sessions rotate IDs and expire after inactivity or 12 hours; account linking to an existing phone record requires its inquiry reference.
+- **Files created:** app/Services/CustomerAuthService.php, resources/views/pages/auth-login.php, database/migrations/2026_11_27_add_customer_accounts.sql.
+- **Database changes:** Added customer_accounts and customer_account_login_attempts to the fresh-install schema; the additive migration was applied to the local database.
+- **Checks performed:** PHP syntax lint passed for all changed route, service and view files; git diff --check passed. Customer registration, login, booking and admin-login end-to-end flows have not yet been exercised.
+- **Known limits / inputs needed:** Email verification/password reset email and Google OAuth are not configured. The admin form accepts the Gmail address already configured for the admin account plus its admin password; this is not one-click Google sign-in.
+- **Remaining tasks:** Run the end-to-end login-gated booking flow and verify it on the target shared host after account details are available.

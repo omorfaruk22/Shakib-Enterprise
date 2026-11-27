@@ -18,8 +18,8 @@ SAKIB ENTERPRISE is a travel agency and tourism business located in Cox's Bazar 
 
 ### Visitor / Customer
 
-- Browse public pages, services, destinations, and active packages.
-- Submit service-specific booking inquiries and general contact messages.
+- Browse public pages, services, destinations, and active packages without signing in.
+- Create a customer account or sign in before submitting service-specific booking inquiries; general contact messages remain public.
 - Contact the business using configured phone/WhatsApp details.
 - Receive a booking reference and a clear notice that the submission is an inquiry, not an issued ticket or confirmed booking.
 
@@ -28,7 +28,7 @@ SAKIB ENTERPRISE is a travel agency and tourism business located in Cox's Bazar 
 - Sign in through a protected admin area; no public admin registration.
 - Review and manage bookings, customers, contact messages, services, packages, destinations, ship routes, testimonials, and site settings according to access permissions.
 - Update booking status and internal notes; review status history.
-- Customers can use a booking reference and the phone number submitted with that inquiry to view the latest status of their own inquiries.
+- Signed-in customers can view their inquiries and latest statuses. The legacy inquiry tracker also accepts a booking reference plus the submitted phone number.
 - Configure business contact details and public website content without editing source files.
 
 ## 4. Functional Requirements
@@ -77,7 +77,7 @@ SAKIB ENTERPRISE is a travel agency and tourism business located in Cox's Bazar 
 ## 6. Business Rules and Boundaries
 
 - Initial booking is an inquiry workflow. Staff contact the customer and update the record; the site must not imply a ticket has been issued.
-- Payment integration, live flight search, automated SMS/email, customer accounts/history, and advanced analytics are future scope only and require legitimate providers/authorization.
+- Payment integration, live flight search, automated SMS/email, and advanced analytics remain future scope and require legitimate providers/authorization.
 - Do not invent phone numbers, email addresses, WhatsApp number, office hours, ratings, testimonials, or provider availability.
 - Protect customer contact/travel data and restrict it to authorized administrators.
 

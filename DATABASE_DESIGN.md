@@ -25,12 +25,21 @@
 
 - `id` PK; `full_name`; `phone`; `phone_normalized` indexed; `email` nullable; `created_at`; `updated_at`.
 - Match repeat inquiries by normalized phone and update the existing customer record in the same transaction as the booking.
-- Customer inquiry access uses a booking reference plus the phone number on that customer record. No customer password or payment data is stored.
+- Customer accounts live in customer_accounts with a unique sign-in email and password_hash; booking ownership still uses customers.id. No plaintext password is stored.
+- Existing inquiry access can continue through a booking reference and the phone number on the linked customer record.
 
 ### `customer_portal_login_attempts`
 
 - `id` PK; SHA-256 hashes of the booking reference and IP address; `attempted_at`; `was_successful`.
 - Use the hashes for short-window rate limiting without storing raw booking references or IP addresses. Delete attempts older than one day during portal sign-in.
+
+### `customer_accounts`
+
+- customer_id is both the primary key and a foreign key to customers; email is unique; password_hash stores the password hash; created_at and updated_at record account changes.
+
+### `customer_account_login_attempts`
+
+- id PK; SHA-256 hashes of the account email identifier and IP address; attempted_at; was_successful. Raw credentials and IP addresses are not stored in this table.
 
 ### `services`
 

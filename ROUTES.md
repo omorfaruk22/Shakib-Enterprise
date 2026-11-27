@@ -22,19 +22,22 @@ Routes use raw PHP and PDO and work on Apache shared hosting. Clean paths use th
 | GET | `/about-us` | Published About Us content with safe fallback |
 | GET | `/contact-us` | Contact details and general inquiry form |
 | POST | `/contact-us` | Validate and store a contact message |
-| GET | `/customer/login` | Customer status-access form using booking reference and submitted phone |
+| GET | `/login` | Customer sign-in and registration page; public browsing remains available |
+| POST | `/login` | Authenticate a customer account and continue to its requested booking page |
+| POST | `/register` | Create a customer account with a password hash and start a session |
+| GET | `/customer/login` | Legacy status-access form using booking reference and submitted phone |
 | POST | `/customer/login` | Verify inquiry ownership and start a rate-limited, time-limited session |
 | GET | `/customer/dashboard` | View the signed-in customer's inquiry references and latest statuses |
 | POST | `/customer/logout` | End the customer portal session |
-| GET | `/booking/{service}` | Service-specific travel inquiry form |
-| POST | `/booking/submit` | Validate and store a travel inquiry and customer record transactionally |
+| GET | `/booking/{service}` | Service-specific inquiry form; redirects guests to sign in first |
+| POST | `/booking/submit` | Require an authenticated customer, then validate and store the inquiry under that account |
 | GET | `/booking/success/{reference}` | Private, non-cacheable inquiry confirmation; not a ticket confirmation |
 | GET | `/health` | Non-sensitive application liveness check |
 | GET | `/health/database` | Local/private database diagnostic; do not expose publicly in production |
 
 ## Admin access and routes
 
-There is no public registration form. `/admin/setup` creates the first administrator only when `ADMIN_SETUP_TOKEN` is configured and no administrator exists. Setup closes after the first account is created. In production, first-admin setup requires HTTPS. Login attempts and setup attempts are rate limited. Admin sessions expire after inactivity and all admin write routes require a valid CSRF token.
+There is no public administrator registration form. `/admin/setup` creates the first administrator only when `ADMIN_SETUP_TOKEN` is configured and no administrator exists. Setup closes after the first account is created. In production, first-admin setup requires HTTPS. Login attempts and setup attempts are rate limited. Admin sessions expire after inactivity and all admin write routes require a valid CSRF token.
 
 | Method | Path | Purpose |
 | --- | --- | --- |

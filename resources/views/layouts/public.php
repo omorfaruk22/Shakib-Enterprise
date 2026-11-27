@@ -63,7 +63,7 @@ $pageBody = (string) ob_get_clean();
         <a class="border-b border-slate-100 py-3 text-sm font-semibold hover:text-brand-red md:border-0 md:py-0" href="<?= e(app_url('/packages')) ?>">Packages</a>
         <a class="border-b border-slate-100 py-3 text-sm font-semibold hover:text-brand-red md:border-0 md:py-0" href="<?= e(app_url('/about-us')) ?>">About</a>
         <a class="py-3 text-sm font-semibold hover:text-brand-red md:py-0" href="<?= e(app_url('/contact-us')) ?>">Contact</a>
-        <a class="border-t border-slate-100 py-3 text-sm font-bold text-brand-red hover:underline md:border-0 md:py-0" href="<?= e(app_url('/customer/login')) ?>">Track inquiry</a>
+        <a class="border-t border-slate-100 py-3 text-sm font-bold text-brand-red hover:underline md:border-0 md:py-0" href="<?= e(app_url('/login')) ?>">Sign in / Book</a>
       </nav>
       <a class="hidden rounded-full bg-brand-red px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:shadow-lg sm:inline-flex" href="<?= e(app_url('/contact-us')) ?>">Plan a trip <span class="ml-2" aria-hidden="true">↗</span></a>
     </div>

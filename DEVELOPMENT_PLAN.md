@@ -80,6 +80,13 @@ Work strictly one phase at a time. A phase is complete only when its deliverable
 - Deliver source, installation SQL, and user/admin documentation.
 - **Status:** Deployment guide prepared; actual host verification and live deployment are pending hosting-account details.
 
+## Phase 12 — Customer Accounts and Booking Gate
+
+- Keep public website pages, services, destinations, and packages visible before login.
+- Add customer registration and email/password sign-in; require a customer session before opening or submitting a booking inquiry.
+- Add an administrator email/password form to the same sign-in page and retain the existing protected admin authentication flow.
+- Link new inquiries to the signed-in account, preserve the legacy reference-and-phone tracker, and document the account migration.
+- **Status:** Implementation complete; end-to-end verification is pending.
 ## Acceptance Gate
 
 Do not claim completion for UI-only functionality. Every form, button, filter, status update, CRUD operation, upload, authentication action, and dashboard metric must be backed by a working implementation and relevant verification before its phase is marked complete.

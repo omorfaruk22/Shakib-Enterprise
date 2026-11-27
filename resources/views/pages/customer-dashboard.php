@@ -34,7 +34,7 @@ $formatDate = static function (mixed $value, string $format = 'd M Y, g:i A'): s
 
     <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <?php if ($bookings === []): ?>
-        <p class="p-8 text-center text-sm text-slate-600">No travel inquiries are currently linked to this account.</p>
+        <div class="p-8 text-center"><p class="text-sm text-slate-600">No travel inquiries are linked to your account yet.</p><a class="mt-4 inline-flex rounded-xl bg-brand-red px-5 py-3 font-bold text-white" href="<?= e(app_url('/services')) ?>">Browse services and start an inquiry</a></div>
       <?php else: ?>
         <ul class="divide-y divide-slate-200">
           <?php foreach ($bookings as $booking): ?>

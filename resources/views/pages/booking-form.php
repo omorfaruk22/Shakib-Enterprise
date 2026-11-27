@@ -23,12 +23,13 @@ $journeyLabel = in_array($bookingType['slug'], ['tour-travel', 'holiday-package'
         <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true"><label for="company-website">Leave this field empty</label><input id="company-website" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
 
         <section aria-labelledby="customer-details-title">
-          <h2 id="customer-details-title" class="text-xl font-extrabold text-brand-navy">Your contact details</h2>
-          <div class="mt-4 grid gap-4 sm:grid-cols-2">
-            <div><label class="<?= $labelClass ?>" for="full-name">Full name <span class="text-brand-red">*</span></label><input class="<?= $inputClass ?>" id="full-name" name="full_name" value="<?= $oldValue('full_name') ?>" autocomplete="name" maxlength="160" required aria-describedby="full-name-error"><?php if ($fieldError('full_name') !== ''): ?><p class="mt-1 text-sm text-red-700" id="full-name-error"><?= e_value($fieldError('full_name')) ?></p><?php endif; ?></div>
-            <div><label class="<?= $labelClass ?>" for="phone">Phone number <span class="text-brand-red">*</span></label><input class="<?= $inputClass ?>" id="phone" name="phone" type="tel" value="<?= $oldValue('phone') ?>" autocomplete="tel" maxlength="40" placeholder="e.g. +8801XXXXXXXXX" required aria-describedby="phone-hint phone-error"><p class="mt-1 text-xs text-slate-500" id="phone-hint">Use a number the team can reach.</p><?php if ($fieldError('phone') !== ''): ?><p class="mt-1 text-sm text-red-700" id="phone-error"><?= e_value($fieldError('phone')) ?></p><?php endif; ?></div>
-            <div class="sm:col-span-2"><label class="<?= $labelClass ?>" for="email">Email address <span class="font-normal text-slate-500">(optional)</span></label><input class="<?= $inputClass ?>" id="email" name="email" type="email" value="<?= $oldValue('email') ?>" autocomplete="email" maxlength="190" aria-describedby="email-error"><?php if ($fieldError('email') !== ''): ?><p class="mt-1 text-sm text-red-700" id="email-error"><?= e_value($fieldError('email')) ?></p><?php endif; ?></div>
+          <h2 id="customer-details-title" class="text-xl font-extrabold text-brand-navy">Your account details</h2>
+          <div class="mt-4 grid gap-4 rounded-2xl bg-slate-50 p-4 sm:grid-cols-3">
+            <div><p class="text-xs font-bold uppercase tracking-wide text-slate-500">Name</p><p class="mt-1 font-semibold text-slate-800"><?= e_value($authenticatedCustomer['full_name'] ?? '') ?></p></div>
+            <div><p class="text-xs font-bold uppercase tracking-wide text-slate-500">Phone</p><p class="mt-1 font-semibold text-slate-800"><?= e_value($authenticatedCustomer['phone'] ?? '') ?></p></div>
+            <div><p class="text-xs font-bold uppercase tracking-wide text-slate-500">Account email</p><p class="mt-1 break-all font-semibold text-slate-800"><?= e_value($authenticatedCustomer['account_email'] ?? '') ?></p></div>
           </div>
+          <p class="mt-2 text-xs leading-5 text-slate-500">This inquiry will be saved to your customer account. Contact the business if your account phone needs to be updated.</p>
         </section>
 
         <section aria-labelledby="travel-details-title">

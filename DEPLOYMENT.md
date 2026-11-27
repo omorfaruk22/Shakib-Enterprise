@@ -52,6 +52,7 @@ For an existing database, back it up first and apply only the migrations it stil
 - `database/migrations/2026_11_26_add_booking_submission_token.sql` if the database predates Phase 6.
 - `database/migrations/2026_11_26_backfill_booking_status_history.sql` once if it predates Phase 7.
 - `database/migrations/2026_11_27_add_customer_portal_login_attempts.sql` for the customer status portal.
+- `database/migrations/2026_11_27_add_customer_accounts.sql` to require customer accounts before booking inquiries.
 
 The fresh-install SQL already contains the current schema. Do not import it over a production database as a substitute for reviewing and applying migrations.
 
