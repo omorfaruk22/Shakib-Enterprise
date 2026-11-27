@@ -16,8 +16,8 @@ class CustomerController extends Controller
         $bookings = Customer::bookings((int)$user['id']);
         $stats = [
             'total' => count($bookings),
-            'pending' => count(array_filter($bookings, fn($b) => $b['status'] === 'Pending')),
-            'confirmed' => count(array_filter($bookings, fn($b) => in_array($b['status'], ['Confirmed','Completed']))),
+            'pending' => count(array_filter($bookings, fn($b) => $b['status'] === 'pending')),
+            'confirmed' => count(array_filter($bookings, fn($b) => in_array($b['status'], ['confirmed', 'completed'], true))),
         ];
         View::render('customer/dashboard', [
             'title' => 'My Account | SAKIB ENTERPRISE',

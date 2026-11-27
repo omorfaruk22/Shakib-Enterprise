@@ -25,13 +25,13 @@ A complete, production-ready travel agency & tourism website for **SAKIB ENTERPR
 ## 🚀 Quick Start (Local Development)
 1. Create a MySQL database (e.g. `sakib_enterprise`, utf8mb4)
 2. Copy `.env.example` to `.env` and fill DB credentials
-3. Import `database/sakib_enterprise.sql` (or let `install.php` create tables)
+3. Use a new, empty database. The installer creates the schema and first admin account. If you import `database/sakib_enterprise.sql` manually, import it only into an empty database.
 4. Run PHP built-in server:
    ```
    php -S localhost:8080 -t public/ public/router.php
    ```
 5. Visit `http://localhost:8080/install.php` to create your first Super Admin
-6. Delete `install.php` after setup
+6. Delete `public/install.php` and `install.php` after setup
 7. Visit `http://localhost:8080/admin/login` to manage content
 
 ## 📁 Project Structure
@@ -50,12 +50,12 @@ sakib-enterprise/
 ```
 
 ## 🛠️ cPanel / Shared Hosting Deployment
-1. Upload project files to your hosting (public_html or subdomain folder)
+1. Upload the application outside the public web root and set the domain document root to the project's `public/` folder
 2. Create a MySQL database and user via cPanel
-3. Edit `.env` with production DB credentials
+3. Copy `.env.example` to `.env` and set production DB credentials
 4. Set `APP_DEBUG=false` and `SESSION_SECURE=true` in `.env`
-5. Visit `https://your-domain.com/install.php` to create tables and admin account
-6. **Delete `install.php`** immediately after setup
+5. Use an empty database, then visit `https://your-domain.com/install.php` to create tables and the first admin account
+6. **Delete `public/install.php` and `install.php`** immediately after setup
 7. Ensure `storage/` and `public/assets/uploads/` are writable (755 or 777)
 
 ## 🔐 Admin Roles

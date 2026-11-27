@@ -35,7 +35,7 @@
         <tr class="border-b last:border-0 hover:bg-gray-50">
           <td class="py-3 font-mono text-xs font-bold text-brand-navy"><?= htmlspecialchars($b['booking_reference']) ?></td>
           <td class="capitalize"><?= htmlspecialchars(str_replace('_',' ',$b['service_type'])) ?></td>
-          <td class="text-xs"><?= htmlspecialchars($b['departure'] ?? '—') ?> → <?= htmlspecialchars($b['destination'] ?? '—') ?></td>
+          <td class="text-xs"><?= htmlspecialchars($b['departure_location'] ?? '—') ?> → <?= htmlspecialchars($b['destination'] ?? '—') ?></td>
           <td class="text-xs"><?= htmlspecialchars($b['journey_date'] ?? '—') ?></td>
           <td><?php \App\Core\View::partial('status-badge', ['status'=>$b['status']]) ?></td>
           <td><a href="<?= url('/customer/bookings/'.$b['id']) ?>" class="text-brand-navy font-bold text-xs">View</a></td>

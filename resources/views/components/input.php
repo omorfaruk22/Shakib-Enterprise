@@ -6,7 +6,7 @@ $type = $type ?? 'text';
 $value = $value ?? old($name);
 $required = $required ?? false;
 $placeholder = $placeholder ?? '';
-$err = $error ?? (flash('errors')[$name] ?? null);
+$err = $error ?? (form_errors()[$name] ?? null);
 $class = $class ?? '';
 ?>
 <div class="<?= $class ?>">

@@ -84,6 +84,21 @@ if (!function_exists('old')) {
     }
 }
 
+if (!function_exists('form_errors')) {
+    function form_errors(): array
+    {
+        static $errors = null;
+        if ($errors === null) {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $errors = $_SESSION['form_errors'] ?? [];
+            unset($_SESSION['form_errors']);
+        }
+        return $errors;
+    }
+}
+
 if (!function_exists('clear_old')) {
     function clear_old(): void
     {

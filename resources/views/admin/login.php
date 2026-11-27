@@ -54,7 +54,7 @@
   <div class="mt-5 pt-4 border-t border-gray-100 space-y-2">
     <p class="text-xs text-gray-500 text-center">
       <i class="fa-solid fa-circle-info mr-1 text-brand-navy"></i>
-      পাসওয়ার্ড ভুলে গেলে Super Admin-কে বলুন "Admin Users" পেজ থেকে রিসেট করতে, অথবা <code class="bg-gray-100 px-1 rounded">install.php</code> রি-রান করুন।
+      পাসওয়ার্ড ভুলে গেলে অন্য Super Admin-এর সঙ্গে যোগাযোগ করুন। নিরাপত্তার জন্য installer দিয়ে existing account reset করা যায় না।
     </p>
     <div class="text-center">
       <a href="<?= url('/') ?>" class="text-xs text-gray-500 hover:text-brand-navy"><i class="fa-solid fa-arrow-left mr-1"></i> Back to website</a>

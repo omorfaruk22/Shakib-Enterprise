@@ -15,7 +15,7 @@ class ContactController extends Controller
             $this->redirect(url('contact'));
         }
         $data = $_POST;
-        $errors = Validator::required($data, ['name', 'phone', 'message']);
+        $errors = Validator::required($data, ['name', 'phone', 'subject', 'message']);
         if (!empty($data['phone']) && !Validator::phone($data['phone'])) {
             $errors['phone'] = 'Please enter a valid phone number.';
         }
@@ -25,7 +25,7 @@ class ContactController extends Controller
         if ($errors) {
             $this->flash('error', 'Please fill all required fields correctly.');
             $this->old($data);
-            $_SESSION['errors'] = $errors;
+            $_SESSION['form_errors'] = $errors;
             $this->back(url('contact'));
         }
         try {

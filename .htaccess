@@ -1,0 +1,11 @@
+# Keep application source and configuration outside the web root.
+# This fallback also makes the project safe to serve from its folder in XAMPP.
+Options -Indexes
+<FilesMatch "^(?:\.env(?:\..*)?|.*\.(?:sql|md)|bootstrap\.php)$">
+    Require all denied
+</FilesMatch>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^public/ - [L]
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

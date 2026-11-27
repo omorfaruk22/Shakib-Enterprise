@@ -5,7 +5,7 @@ $value = $value ?? old($name);
 $required = $required ?? false;
 $placeholder = $placeholder ?? '';
 $rows = $rows ?? 4;
-$err = flash('errors')[$name] ?? null;
+$err = form_errors()[$name] ?? null;
 ?>
 <div>
   <label for="fld-<?= htmlspecialchars($name) ?>" class="block text-sm font-semibold text-gray-700 mb-1.5">

@@ -40,9 +40,9 @@ class View
         }
     }
 
-    public static function partial(string $name, array $data = []): void
+    public static function partial(string $partialName, array $data = []): void
     {
-        $file = __DIR__ . '/../../resources/views/components/' . str_replace('.', '/', $name) . '.php';
+        $file = __DIR__ . '/../../resources/views/components/' . str_replace('.', '/', $partialName) . '.php';
         if (is_file($file)) {
             extract($data, EXTR_SKIP);
             require $file;

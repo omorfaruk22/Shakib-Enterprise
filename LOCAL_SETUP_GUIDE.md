@@ -71,18 +71,19 @@ git clone https://github.com/omorfaruk22/Shakib-Enterprise.git
    ├── app\
    ├── config\
    ├── database\
-   ├── docs\
    ├── public\
    │   ├── assets\
    │   ├── index.php
+│   ├── install.php
+│   ├── router.php
    │   └── .htaccess
    ├── resources\
    │   └── views\
    ├── routes\
    ├── storage\
-   ├── tests\
    ├── bootstrap.php
    ├── install.php
+├── .htaccess
    ├── README.md
    └── .env.example
    ```
@@ -153,10 +154,9 @@ RATE_LIMIT_PER_MINUTE=30
 Windows-এ সাধারণত দরকার হয় না, তবে যদি লগ/ক্যাশ/আপলোড এরর আসে:
 1. `C:\xampp\htdocs\sakib\storage` ফোল্ডারে রাইট-ক্লিক → **Properties**
 2. **Security** ট্যাবে যান
-3. **Edit...** ক্লিক করুন
-4. **Everyone** user কে খুঁজে (না থাকলে Add করুন), **Full control** চেক করুন
+3. Apache যে Windows user-এ চলছে, শুধু সেই user-কে `storage` এবং `public/assets/uploads` ফোল্ডারে **Modify** permission দিন
+4. **Everyone** বা অন্য কোনো account-কে **Full control** দেবেন না; প্রয়োজনের বেশি permission দেবেন না
 5. **Apply** → **OK**
-6. একইভাবে `public/assets/uploads` ফোল্ডারের জন্য করুন
 
 ---
 
@@ -167,22 +167,17 @@ Windows-এ সাধারণত দরকার হয় না, তবে �
    http://localhost/sakib/install.php
    ```
 2. আপনি "SAKIB ENTERPRISE - Installation" পেজ দেখতে পাবেন
-3. পেজটি সবকিছু সবুজ ✅ দেখাচ্ছে কিনা চেক করুন:
-   - PHP Version: 8.2+ ✅
-   - PDO Extension: ✅
-   - storage/ writable: ✅
-   - public/assets/uploads/ writable: ✅
-   - .env writable: ✅
+3. Installer চালানোর আগে নিশ্চিত করুন `.env`-এ `DB_USERNAME` এবং `DB_PASSWORD` সেট করা আছে এবং `sakib_enterprise` database খালি, অথবা এই project-এর schema সেখানে import করা আছে। Installer existing admin account বা অন্য data overwrite করবে না।
 4. নিচের ফর্মে Super Admin তথ্য দিন:
    - **Full Name:** (আপনার নাম, যেমন: `Md. Omar Faruk`)
    - **Email:** (আপনার যেকোনো ইমেইল — Gmail, Yahoo, Outlook সব চলবে)
      - যেমন: `sakib.enterprise.bd@gmail.com`
-   - **Password:** (কমপক্ষে ৬ অক্ষর, মনে রাখার মতো)
+   - **Password:** (কমপক্ষে ১২ অক্ষর, শক্তিশালী ও অনন্য)
    - **Confirm Password:** (একই পাসওয়ার্ড আবার)
 5. **"Install & Create Admin Account"** বাটনে ক্লিক করুন
-6. ✅ "Installation successful!" মেসেজ দেখালে সফল!
+6. ✅ "Installation complete" মেসেজ দেখালে সফল!
 
-> ⚠️ **গুরুত্বপূর্ণ:** ইনস্টল সফল হওয়ার মাত্রই `C:\xampp\htdocs\sakib\install.php` ফাইলটি ডিলিট করে দিন। (এটা security এর জন্য জরুরি)
+> ⚠️ **গুরুত্বপূর্ণ:** ইনস্টল সফল হওয়ার পর `C:\xampp\htdocs\sakib\public\install.php` এবং `C:\xampp\htdocs\sakib\install.php`—দুটিই ডিলিট করুন। Installer lock থাকলেও অতিরিক্ত নিরাপত্তার জন্য wrapper সরিয়ে দিন।
 
 ---
 
@@ -295,14 +290,14 @@ Admin panel এ লগইন করে এই কাজগুলো করুন
 
 ### সমস্যা ৭: ছবি আপলোড হচ্ছে না
 **সমাধান:**
-- `public/assets/uploads/` ফোল্ডারে write permission দিন
+- Apache service user-কে `public/assets/uploads/`-এ প্রয়োজনীয় Modify permission দিন
 - ছবির সাইজ 5MB-এর বেশি হলে আপলোড হবে না
 - শুধু JPG, JPEG, PNG, WebP, GIF ফরম্যাট অনুমোদিত
 
 ---
 
 ## 🛡️ নিরাপত্তা টিপস (Production এর জন্য)
-- `install.php` ফাইল অবশ্যই ডিলিট করুন
+- `public/install.php` ও root-এর `install.php` দুটোই ডিলিট করুন
 - `.env` ফাইল কারো সাথে শেয়ার করবেন না
 - পাসওয়ার্ড শক্তিশালী ব্যবহার করুন (অক্ষর+সংখ্যা+চিহ্ন)
 - `APP_DEBUG=false` করুন লাইভে যাওয়ার আগে

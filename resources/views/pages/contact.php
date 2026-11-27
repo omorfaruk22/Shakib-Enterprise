@@ -49,7 +49,7 @@
         <h2 class="font-display font-bold text-2xl text-brand-navy mb-5">Send us a Message</h2>
         <form method="POST" action="<?= url('/contact') ?>" class="space-y-4">
           <?= csrf_field() ?>
-          <div class="honeypot" aria-hidden="true" style="position:absolute;left:-9999px"><input type="text" name="website" tabindex="-1"></div>
+          <div class="honeypot" aria-hidden="true" style="position:absolute;left:-9999px"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
           <?php partial('input', ['name'=>'name','label'=>'Your Name','required'=>true]); ?>
           <div class="grid md:grid-cols-2 gap-4">
             <?php partial('input', ['name'=>'phone','label'=>'Phone','type'=>'tel','required'=>true,'placeholder'=>'01XXXXXXXXX']); ?>

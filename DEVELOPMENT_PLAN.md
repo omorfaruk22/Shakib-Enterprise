@@ -14,10 +14,10 @@
 | 06 | Booking Inquiry System | 5 forms, validation, customer handling, references, MySQL save, success, anti-duplicate | ✅ Complete — `BookingService`, `BookingController`, `bookings` table |
 | 07 | Backend & DB Integration | Models, CRUD, services/packages/destinations/contacts, status history | ✅ Complete — `app/Models/*`, `app/Services/*` |
 | 08 | Admin Dashboard | Auth, dashboard stats, bookings/customers/services/packages/CMS/contacts/settings/logs | ✅ Complete — `app/Controllers/Admin/*`, `views/admin/*` |
-| 09 | Testing & Optimization | Page/form/CRUD/auth/CSRF/SQLi/XSS/upload/mobile/link/pagination tests, image/query optimization | ✅ Complete — `tests/run_tests.php`, `TESTING_REPORT.md` |
-| 10 | Deployment & Handover | Prod config, SQL, cPanel guide, security, doc-root, install/admin/backup/management docs | ✅ Complete — `DEPLOYMENT.md`, `README.md`, `database/sakib_enterprise.sql` |
+| 09 | Testing & Optimization | Page/form/CRUD/auth/CSRF/SQLi/XSS/upload/mobile/link/pagination checks | ⚠️ Pending — no automated test suite or test report is included in this checkout |
+| 10 | Deployment & Handover | Production config, SQL, cPanel guide, security, document root, installer/admin/backup docs | 📝 Review deployment configuration before launch |
 
-> **Execution Note:** Per user request ("Tailwind দিয়ে বানিয়ে দাও"), all 10 phases were implemented in one systematic build sequence (01→10) with verification at each step, rather than stopping after Phase 01. `DEVELOPMENT_PROGRESS.md` records per-phase files, tests, and results. No phase was skipped; each phase's deliverables exist in the repo.
+> **Execution Note:** This plan describes the intended phases. Testing and deployment claims must be based on the current checkout and a configured environment; no automated test suite or test report is included here.
 
 ## Folder Structure (Final)
 ```
@@ -35,10 +35,9 @@ sakib-enterprise/
 ├── resources/views/ (layouts/main.php, layouts/admin.php, components/*, pages/*, admin/*)
 ├── routes/ (web.php, admin.php)
 ├── storage/ (logs/, cache/)
-├── tests/ (run_tests.php)
 ├── bootstrap.php, install.php, index.php, .htaccess, .env.example, .gitignore
 ├── REQUIREMENTS.md, DATABASE_DESIGN.md, ROUTES.md, DEVELOPMENT_PLAN.md
-├── DEVELOPMENT_PROGRESS.md, TESTING_REPORT.md, DEPLOYMENT.md, README.md
+├── DEVELOPMENT_PROGRESS.md, README.md
 ```
 
 ## Tailwind Implementation Plan
@@ -50,15 +49,14 @@ sakib-enterprise/
 - **JS:** Vanilla — mobile menu, sticky header, scroll animations (IntersectionObserver), form validation, toast notifications, testimonial slider, back-to-top, WhatsApp float.
 
 ## Testing Strategy (Phase 09)
-- Automated: `php tests/run_tests.php` — syntax check all PHP, DB connectivity, schema tables exist, seed counts, PDO prepared-statement test, CSRF token test, password hash/verify, booking reference uniqueness, phone normalization, route registration, file existence, `.htaccess` protections.
-- Manual/E2E (documented in TESTING_REPORT.md): public pages render, all 5 booking forms save + show in admin, status changes persist + history, package CRUD + image upload, contact save + admin read/reply, settings update frontend, search/filter/pagination, CSV export, mobile responsiveness (375/768/1024/1440), broken links, SQLi/XSS payloads escaped, CSRF rejection.
+- Automated and manual/E2E checks: pending. Add reproducible test scripts and record results for the configured database and deployment environment.
 - Performance: indexed queries, pagination (12/page), lazy images, minified custom CSS/JS where practical.
 
 ## Deployment Strategy (Phase 10)
 1. cPanel → MySQL Database → create DB/user → import `database/sakib_enterprise.sql` via phpMyAdmin.
-2. Upload project to `public_html` (or set doc root to `public/` if supported).
+2. Keep application files outside the public web root and set the domain document root to this project's `public/` directory.
 3. Copy `.env.example` → `.env`, fill DB credentials + `APP_URL`.
-4. Visit `/install` → create admin → delete/disable `install.php`.
+4. Start with an empty database, visit `/install.php` → create the first admin → remove both installer entry points.
 5. Verify `/`, `/admin/login`, booking flow, WhatsApp link.
 6. Backup: mysqldump + uploads folder. See `DEPLOYMENT.md`.
 

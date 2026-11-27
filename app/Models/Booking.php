@@ -162,7 +162,14 @@ class Booking
         $out = "Reference,Type,Status,Customer,Phone,Email,From,To,Journey Date,Passengers,Created\n";
         foreach ($rows as $r) {
             $vals = [$r['booking_reference'], $r['service_type'], $r['status'], $r['customer_name'], $r['phone'], $r['email'] ?? '', $r['departure_location'] ?? '', $r['destination'] ?? '', $r['journey_date'] ?? '', $r['passenger_count'], $r['created_at']];
-            $out .= implode(',', array_map(fn($v) => '"' . str_replace('"', '""', (string)$v) . '"', $vals)) . "\n";
+            $out .= implode(',', array_map(static function ($value): string {
+                $value = (string)$value;
+                // Prevent spreadsheet apps from evaluating customer-controlled cells as formulas.
+                if (preg_match('/^[\t\r\n ]*[=+\-@]/', $value)) {
+                    $value = "'" . $value;
+                }
+                return '"' . str_replace('"', '""', $value) . '"';
+            }, $vals)) . "\n";
         }
         return $out;
     }
