@@ -14,9 +14,9 @@ $nav = [
 if ($isFullAdmin) {
   $nav += [
     'services'  => ['label'=>'Services','icon'=>'fa-solid fa-briefcase','url'=>'/admin/services'],
+    'destinations'=>['label'=>'Destinations','icon'=>'fa-solid fa-location-dot','url'=>'/admin/destinations'],
     'tour-packages'=>['label'=>'Tour Packages','icon'=>'fa-solid fa-route','url'=>'/admin/tour-packages'],
     'holiday-packages'=>['label'=>'Holiday Packages','icon'=>'fa-solid fa-umbrella-beach','url'=>'/admin/holiday-packages'],
-    'destinations'=>['label'=>'Destinations','icon'=>'fa-solid fa-location-dot','url'=>'/admin/destinations'],
     'ship-routes'=>['label'=>'Ship Routes','icon'=>'fa-solid fa-ship','url'=>'/admin/ship-routes'],
     'testimonials'=>['label'=>'Testimonials','icon'=>'fa-solid fa-quote-left','url'=>'/admin/testimonials'],
   ];

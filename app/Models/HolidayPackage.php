@@ -8,15 +8,20 @@ class HolidayPackage
 {
     public static function table(): string { return 'holiday_packages'; }
 
-    public static function active(int $limit = 20, int $offset = 0, string $search = ''): array
+    public static function active(int $limit = 20, int $offset = 0, string $search = '', int $destinationId = 0): array
     {
-        $where = 'WHERE is_active = 1';
+        $where = 'WHERE hp.is_active = 1';
         $params = [];
         if ($search !== '') {
-            $where .= ' AND (title LIKE ? OR short_description LIKE ?)';
-            $params = ["%$search%", "%$search%"];
+            $where .= ' AND (hp.title LIKE ? OR hp.short_description LIKE ?)';
+            $params[] = "%$search%";
+            $params[] = "%$search%";
         }
-        $sql = "SELECT * FROM holiday_packages $where ORDER BY sort_order, created_at DESC LIMIT $limit OFFSET $offset";
+        if ($destinationId > 0) {
+            $where .= ' AND hp.destination_id = ?';
+            $params[] = $destinationId;
+        }
+        $sql = "SELECT hp.*, d.name AS destination_name FROM holiday_packages hp LEFT JOIN destinations d ON d.id = hp.destination_id $where ORDER BY hp.sort_order, hp.created_at DESC LIMIT $limit OFFSET $offset";
         $stmt = Database::getConnection()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -24,20 +29,27 @@ class HolidayPackage
 
     public static function featured(int $limit = 6): array
     {
-        $stmt = Database::getConnection()->prepare('SELECT * FROM holiday_packages WHERE is_active = 1 AND is_featured = 1 ORDER BY sort_order LIMIT ?');
+        $stmt = Database::getConnection()->prepare('SELECT hp.*, d.name AS destination_name FROM holiday_packages hp LEFT JOIN destinations d ON d.id = hp.destination_id WHERE hp.is_active = 1 AND hp.is_featured = 1 ORDER BY hp.sort_order LIMIT ?');
         $stmt->bindValue(1, $limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();
     }
 
-    public static function countActive(string $search = ''): int
+    public static function countActive(string $search = '', int $destinationId = 0): int
     {
+        $where = 'WHERE is_active = 1';
+        $params = [];
         if ($search !== '') {
-            $stmt = Database::getConnection()->prepare('SELECT COUNT(*) FROM holiday_packages WHERE is_active = 1 AND (title LIKE ? OR short_description LIKE ?)');
-            $stmt->execute(["%$search%", "%$search%"]);
-            return (int)$stmt->fetchColumn();
+            $where .= ' AND (title LIKE ? OR short_description LIKE ?)';
+            $params = ["%$search%", "%$search%"];
         }
-        return (int)Database::getConnection()->query('SELECT COUNT(*) FROM holiday_packages WHERE is_active = 1')->fetchColumn();
+        if ($destinationId > 0) {
+            $where .= ' AND destination_id = ?';
+            $params[] = $destinationId;
+        }
+        $stmt = Database::getConnection()->prepare("SELECT COUNT(*) FROM holiday_packages $where");
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
     }
 
     public static function findBySlug(string $slug): ?array
@@ -50,7 +62,7 @@ class HolidayPackage
 
     public static function find(int $id): ?array
     {
-        $stmt = Database::getConnection()->prepare('SELECT * FROM holiday_packages WHERE id = ? LIMIT 1');
+        $stmt = Database::getConnection()->prepare('SELECT hp.*, d.name AS destination_name FROM holiday_packages hp LEFT JOIN destinations d ON d.id = hp.destination_id WHERE hp.id = ? LIMIT 1');
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -58,12 +70,12 @@ class HolidayPackage
 
     public static function all(): array
     {
-        return Database::getConnection()->query('SELECT * FROM holiday_packages ORDER BY sort_order, created_at DESC')->fetchAll();
+        return Database::getConnection()->query('SELECT hp.*, d.name AS destination_name FROM holiday_packages hp LEFT JOIN destinations d ON d.id = hp.destination_id ORDER BY hp.sort_order, hp.created_at DESC')->fetchAll();
     }
 
     public static function related(int $excludeId, int $limit = 3): array
     {
-        $stmt = Database::getConnection()->prepare('SELECT * FROM holiday_packages WHERE is_active = 1 AND id != ? ORDER BY is_featured DESC, sort_order LIMIT ?');
+        $stmt = Database::getConnection()->prepare('SELECT hp.*, d.name AS destination_name FROM holiday_packages hp LEFT JOIN destinations d ON d.id = hp.destination_id WHERE hp.is_active = 1 AND hp.id != ? ORDER BY hp.is_featured DESC, hp.sort_order LIMIT ?');
         $stmt->bindValue(1, $excludeId, PDO::PARAM_INT);
         $stmt->bindValue(2, $limit, PDO::PARAM_INT);
         $stmt->execute();
