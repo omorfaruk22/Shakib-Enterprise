@@ -6,6 +6,7 @@
 <title><?= htmlspecialchars($title ?? setting('meta_title', setting('business_name', 'SAKIB ENTERPRISE'))) ?></title>
 <meta name="description" content="<?= htmlspecialchars($metaDescription ?? setting('meta_description', 'SAKIB ENTERPRISE — Your Trusted Travel Partner in Cox\'s Bazar. Air tickets, ship tickets, bus tickets, tours and holiday packages.')) ?>">
 <meta name="theme-color" content="#102B70">
+<link rel="icon" type="image/svg+xml" href="<?= asset('assets/images/favicon.svg') ?>">
 <link rel="canonical" href="<?= htmlspecialchars($canonical ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
 <meta property="og:title" content="<?= htmlspecialchars($title ?? setting('business_name','SAKIB ENTERPRISE')) ?>">
 <meta property="og:description" content="<?= htmlspecialchars($metaDescription ?? setting('meta_description','Your Trusted Travel Partner')) ?>">
